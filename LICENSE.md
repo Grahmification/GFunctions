@@ -3,6 +3,18 @@ The MIT License (MIT)
 
 Copyright (c) 2019 Graham Kerr
 
+This software utilizes the Mathnet.Numerics Library under the MIT License.
+Copyright (c) 2002-2019 Math.NET
+https://github.com/mathnet/mathnet-numerics
+
+This software utilizes the OxyPlot.Core Library under the MIT License.
+Copyright (c) 2014 OxyPlot contributors
+https://github.com/oxyplot
+
+This software utilizes the OpenTK Library under the MIT License.
+Copyright (c) 2006-2019 Stefanos Apostolopoulos for the Open Toolkit project.
+https://github.com/opentk/opentk
+
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
