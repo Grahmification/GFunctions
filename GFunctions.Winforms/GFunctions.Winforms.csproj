@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{3538BAFD-D5E1-4C5B-8F51-762864376441}</ProjectGuid>
+    <ProjectGuid>{0109EADB-C675-4427-AAA5-7FA1F133B662}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>GFunctions</RootNamespace>
-    <AssemblyName>GFunctions</AssemblyName>
+    <RootNamespace>GFunctions.Winforms</RootNamespace>
+    <AssemblyName>GFunctions.Winforms</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -30,15 +30,10 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>false</SignAssembly>
-  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -48,20 +43,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IO\Config.cs" />
-    <Compile Include="IO\CSVWriter.cs" />
-    <Compile Include="IO\CSVReader.cs" />
-    <Compile Include="IO\ExceptionLogger.cs" />
-    <Compile Include="IO\Logger.cs" />
-    <Compile Include="IO\XMLSerializer.cs" />
-    <Compile Include="Mathematics\Calculus.cs" />
-    <Compile Include="Mathematics\IterativeSolver.cs" />
-    <Compile Include="Mathematics\PIDController.cs" />
-    <Compile Include="Mathematics\TrapezoidalTrajectory.cs" />
+    <Compile Include="Controls\NumericalInputTextBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Timing\StopWatchPrecision.cs" />
-    <Compile Include="Timing\TimeSimulation.cs" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
