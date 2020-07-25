@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.IO;
 
-namespace GFunctions
+namespace GFunctions.IO
 {
-    public class csvReader
+    public class CSVReader
     {
         private StreamReader _reader = null;
         private string _fullPath = "";
@@ -16,7 +16,7 @@ namespace GFunctions
         private const int reCheckPeriod = 100; //refresh period in ms to check if a file exists
 
 
-        public csvReader()
+        public CSVReader()
         {
 
         }
@@ -89,43 +89,6 @@ namespace GFunctions
             {
                 Thread.Sleep(reCheckPeriod);
             }
-        }
-
-    }
-
-    public class csvWriter
-    {
-        private StreamWriter _writer = null;
-
-        public csvWriter(string folder, string fileName)
-        {
-            string fullPath = folder + @"\" + fileName;
-            _writer = new StreamWriter(fullPath);
-        }
-
-        public void close()
-        {
-            _writer.Close();
-        }
-
-        public void writeLine(string[] lineItems)
-        {
-            string line = String.Join(",", lineItems);
-
-            _writer.WriteLine(line);
-            _writer.Flush();
-        }
-
-        public void writeLines(List<string[]> lines)
-        {
-            foreach (string[] line in lines)
-            {
-                string joinedLine = String.Join(",", line);
-
-                _writer.WriteLine(joinedLine);
-                _writer.Flush();
-            }
-
         }
 
     }

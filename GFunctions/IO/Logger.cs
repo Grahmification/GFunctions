@@ -1,21 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using System.IO;
 
 
-namespace ZaberFunctions
+namespace GFunctions.IO
 {
-    public class Logging
+    public class Logger
     {
         private string _applicationPath = "";
         private string _fileName = "Log File";
         private string _folderName = "ErrorLogs";
 
-        public Logging(string ApplicationPath, string fileName = "", string folderName = "")
+        public Logger(string ApplicationPath, string fileName = "", string folderName = "")
         {
             try
             {
@@ -86,43 +81,6 @@ namespace ZaberFunctions
             return currentDate() + " " + currentTime();
         }
 
-    }
-
-    public interface IExceptionLogger
-    {
-        void Log(Exception Ex);
-    }
-    public class ExceptionLogging : Logging, IExceptionLogger
-    {
-        public ExceptionLogging(string ApplicationPath) : base(ApplicationPath)
-        {
-
-        }
-
-        public void Log(Exception ex)
-        {
-            try
-            {
-                this.writeTextDatedBlock(ex.ToString());
-            }
-            catch
-            {
-
-            }
-        }
-
-        public static void DisplayError(string message)
-        {
-            try
-            {
-
-                MessageBox.Show("An error occurred: " + message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            catch
-            {
-
-            }
-        }
     }
 
 }

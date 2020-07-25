@@ -5,6 +5,12 @@ VisualStudioVersion = 16.0.29411.108
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GFunctions", "GFunctions\GFunctions.csproj", "{3538BAFD-D5E1-4C5B-8F51-762864376441}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GFunctions.Mathnet", "GFunctions.Mathnet\GFunctions.Mathnet.csproj", "{ABBBF048-F1D1-4483-8603-3E687439E9EE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GFunctions.Plotting", "GFunctions.Plotting\GFunctions.Plotting.csproj", "{9DB77B37-D2F2-4302-97EB-55321AAA8CE1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GFunctions.OpenTK", "GFunctions.OpenTK\GFunctions.OpenTK.csproj", "{FD5AE797-551A-475D-8F27-7E66CBD30F04}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +21,18 @@ Global
 		{3538BAFD-D5E1-4C5B-8F51-762864376441}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3538BAFD-D5E1-4C5B-8F51-762864376441}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3538BAFD-D5E1-4C5B-8F51-762864376441}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABBBF048-F1D1-4483-8603-3E687439E9EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABBBF048-F1D1-4483-8603-3E687439E9EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABBBF048-F1D1-4483-8603-3E687439E9EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABBBF048-F1D1-4483-8603-3E687439E9EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9DB77B37-D2F2-4302-97EB-55321AAA8CE1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9DB77B37-D2F2-4302-97EB-55321AAA8CE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9DB77B37-D2F2-4302-97EB-55321AAA8CE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9DB77B37-D2F2-4302-97EB-55321AAA8CE1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD5AE797-551A-475D-8F27-7E66CBD30F04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD5AE797-551A-475D-8F27-7E66CBD30F04}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD5AE797-551A-475D-8F27-7E66CBD30F04}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD5AE797-551A-475D-8F27-7E66CBD30F04}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
