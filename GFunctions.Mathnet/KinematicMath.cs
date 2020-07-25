@@ -71,5 +71,55 @@ namespace GFunctions.Mathnet
 
             return Math.Sqrt(output);
         }
+        public static double[] RotateVector(double[] vector, double[] rotationPRY)
+        {
+            DenseVector vectorObj = new DenseVector(vector); //local vector without rotation;
+            DenseMatrix rotation = RotationMatrixFromPRY(rotationPRY);
+
+            DenseVector rotatedVector = rotation * vectorObj; //apply rotation
+
+            return rotatedVector.ToArray();
+        }
+
+
+        public static double[] CalcGlobalCoord(double[] LocalCoord, double[] Trans1, double[] Trans2, double[] Rot)
+        {
+            DenseMatrix LocalCoords = new DenseMatrix(3, 1);
+            LocalCoords.SetColumn(0, LocalCoord);
+
+            DenseMatrix TranslationMat = new DenseMatrix(3, 1);
+            TranslationMat.SetColumn(0, Trans1);
+
+            DenseMatrix StartingMat = new DenseMatrix(3, 1);
+            StartingMat.SetColumn(0, Trans2);
+
+            DenseMatrix GlobalCoords = (KinematicMath.RotationMatrixFromPRY(Rot) * LocalCoords) + TranslationMat + StartingMat;
+
+            return new double[] { GlobalCoords[0, 0], GlobalCoords[1, 0], GlobalCoords[2, 0] };
+        }
+        public static double[] CalcGlobalCoord2(double[] LocalCoord, double[] Trans1, double[] Trans2, double[] Rot, double[] RelativeRotCenter = null)
+        {
+            double[] coords = new double[] { 0, 0, 0 };
+
+            if (RelativeRotCenter != null)
+                coords = RelativeRotCenter;
+
+            DenseMatrix RotCenter = new DenseMatrix(3, 1);
+            RotCenter.SetColumn(0, coords);
+
+            DenseMatrix LocalCoords = new DenseMatrix(3, 1);
+            LocalCoords.SetColumn(0, LocalCoord);
+
+            DenseMatrix TranslationMat = new DenseMatrix(3, 1);
+            TranslationMat.SetColumn(0, Trans1);
+
+            DenseMatrix TranslationMat2 = new DenseMatrix(3, 1);
+            TranslationMat2.SetColumn(0, Trans2);
+
+
+            DenseMatrix GlobalCoords = (KinematicMath.RotationMatrixFromPRY(Rot) * (LocalCoords - RotCenter + TranslationMat)) + TranslationMat2 + RotCenter; //Rotcenter needs to be added before rotation, then removed after
+
+            return new double[] { GlobalCoords[0, 0], GlobalCoords[1, 0], GlobalCoords[2, 0] };
+        }
     }
 }
