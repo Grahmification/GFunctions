@@ -58,6 +58,9 @@
     <Compile Include="Mathematics\IterativeSolver.cs" />
     <Compile Include="Mathematics\PIDController.cs" />
     <Compile Include="Mathematics\TrapezoidalTrajectory.cs" />
+    <Compile Include="Process\ProcessControllerBase.cs" />
+    <Compile Include="Process\ProcessProgressArgs.cs" />
+    <Compile Include="Process\ProcessStatus.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Timing\StopWatchPrecision.cs" />
     <Compile Include="Timing\TimeSimulation.cs" />

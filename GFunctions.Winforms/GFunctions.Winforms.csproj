@@ -46,7 +46,21 @@
     <Compile Include="Controls\NumericalInputTextBox.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Process\IProcessView.cs" />
+    <Compile Include="Process\ProcessController.cs" />
+    <Compile Include="Process\ProcessToggleView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Process\ProcessToggleView.Designer.cs">
+      <DependentUpon>ProcessToggleView.cs</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GFunctions\GFunctions.csproj">
+      <Project>{3538bafd-d5e1-4c5b-8f51-762864376441}</Project>
+      <Name>GFunctions</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
