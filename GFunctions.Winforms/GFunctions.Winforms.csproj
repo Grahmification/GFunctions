@@ -43,9 +43,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controls\NumericalInputTextBox.cs">
+    <Compile Include="Input\NumericalInputTextBox.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Input\NumericDisplayTextBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Input\NumericDisplayTextBox.Designer.cs">
+      <DependentUpon>NumericDisplayTextBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\FormattedMessageBox.cs" />
+    <Compile Include="Dialogs\IODialogHelpers.cs" />
+    <Compile Include="Input\NumericDisplayModel.cs" />
     <Compile Include="Process\IProcessView.cs" />
     <Compile Include="Process\ProcessController.cs" />
     <Compile Include="Process\ProcessToggleView.cs">
@@ -62,5 +71,6 @@
       <Name>GFunctions</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

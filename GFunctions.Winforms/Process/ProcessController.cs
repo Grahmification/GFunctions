@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using GFunctions.IO;
 using GFunctions.Process;
+using GFunctions.Winforms.Dialogs;
 
 namespace GFunctions.Winforms.Process
 {

@@ -3,11 +3,10 @@ using System.Drawing;
 using System.Windows.Forms;
 
 
-namespace GFunctions.Winforms.Controls
+namespace GFunctions.Winforms.Input
 {
     public class NumericalInputTextBox : TextBox
     {
-
         public double Value
         {
             get
@@ -63,7 +62,7 @@ namespace GFunctions.Winforms.Controls
                 this.ConvertInput(text);
                 return true;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return false;
             }
