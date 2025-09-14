@@ -29,7 +29,9 @@ using System.Collections.Generic;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
+using OpenTK.GLControl;
 using System.Windows.Forms;
+using OpenTK.Mathematics;
 
 namespace GFunctions.OpenTK
 {
@@ -280,7 +282,8 @@ namespace GFunctions.OpenTK
         private void Cleanup()
         {
             //Finally...
-            GraphicsContext.CurrentContext.SwapInterval = 1;
+            if (SubControl.Context != null)
+                SubControl.Context.SwapInterval = 1;
             this.SubControl.SwapBuffers(); //Takes from the 'GL' and puts into control 
         } //step 4 this needs to be done after all objects are drawn
 
