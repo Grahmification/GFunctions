@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace GFunctions.IO
+﻿namespace GFunctions.IO
 {
     public interface IExceptionLogger
     {

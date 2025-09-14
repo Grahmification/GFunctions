@@ -1,6 +1,4 @@
-﻿using System.Windows.Forms;
-
-namespace GFunctions.Winforms.Dialogs
+﻿namespace GFunctions.Winforms.Dialogs
 {
     /// <summary>
     /// Class providing a global entry point for displaying message boxes

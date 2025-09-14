@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace GFunctions.Process
+﻿namespace GFunctions.Process
 {
     public class ViewLock
     {

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using System.Threading;
-
-namespace GFunctions.Timing
+﻿namespace GFunctions.Timing
 {
     public class TimeSimulation
     {

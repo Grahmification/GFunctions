@@ -1,7 +1,4 @@
-﻿using System;
-using System.Windows.Forms;
-
-namespace GFunctions.Winforms.Process
+﻿namespace GFunctions.Winforms.Process
 {
     public partial class ProcessToggleView : UserControl, IProcessView
     {

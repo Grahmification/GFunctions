@@ -1,8 +1,4 @@
-﻿using System;
-using System.Drawing;
-using System.Windows.Forms;
-
-namespace GFunctions.Winforms.Input
+﻿namespace GFunctions.Winforms.Input
 {
     public partial class NumericDisplayTextBox : TextBox
     {

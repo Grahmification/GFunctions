@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading;
-using System.IO;
-
-namespace GFunctions.IO
+﻿namespace GFunctions.IO
 {
     public class CSVReader
     {

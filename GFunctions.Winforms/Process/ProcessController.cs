@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using GFunctions.IO;
+﻿using GFunctions.IO;
 using GFunctions.Process;
 using GFunctions.Winforms.Dialogs;
 

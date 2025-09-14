@@ -24,13 +24,8 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-using System;
-using System.Collections.Generic;
-using OpenTK;
-using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.GLControl;
-using System.Windows.Forms;
 using OpenTK.Mathematics;
 
 namespace GFunctions.OpenTK

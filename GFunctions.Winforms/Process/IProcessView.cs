@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace GFunctions.Winforms.Process
+﻿namespace GFunctions.Winforms.Process
 {
     /// <summary>
     /// Views that allow starting and stopping long running processes

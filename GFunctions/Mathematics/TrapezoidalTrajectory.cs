@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace GFunctions.Mathematics
+﻿namespace GFunctions.Mathematics
 {
     public class TrapezoidalTrajectory
     {

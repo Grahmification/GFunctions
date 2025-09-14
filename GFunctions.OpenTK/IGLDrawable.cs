@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace GFunctions.OpenTK
+﻿namespace GFunctions.OpenTK
 {
     public interface IGLDrawable
     {

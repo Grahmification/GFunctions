@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-
-namespace GFunctions.IO
+﻿namespace GFunctions.IO
 {
     /// <summary>
     /// Helper functions for creating, reading and writing files

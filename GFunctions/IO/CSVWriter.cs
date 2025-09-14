@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-
-namespace GFunctions.IO
+﻿namespace GFunctions.IO
 {
     public class CSVWriter
     {

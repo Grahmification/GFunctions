@@ -1,8 +1,4 @@
-﻿using System;
-using System.Windows.Forms;
-using System.Collections.Generic;
-
-namespace GFunctions.Winforms.Dialogs
+﻿namespace GFunctions.Winforms.Dialogs
 {
     /// <summary>
     /// Class providing a global entry point for displaying dialog boxes to save and load files/folders
