@@ -120,7 +120,7 @@ namespace GFunctions.Mathnet
 
             return new double[] { GlobalCoords[0, 0], GlobalCoords[1, 0], GlobalCoords[2, 0] };
         }
-        public static double[] CalcGlobalCoord2(double[] LocalCoord, double[] Trans1, double[] Trans2, double[] Rot, double[] RelativeRotCenter = null)
+        public static double[] CalcGlobalCoord2(double[] LocalCoord, double[] Trans1, double[] Trans2, double[] Rot, double[]? RelativeRotCenter = null)
         {
             double[] coords = new double[] { 0, 0, 0 };
 

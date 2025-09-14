@@ -9,9 +9,9 @@
 
         public string ToggleButtonText { get { return button_toggle.Text; } set { button_toggle.Text = value; } }
 
-        public event EventHandler StartRequest;
-        public event EventHandler StopRequest;
-        public event EventHandler ToggleRequest;
+        public event EventHandler? StartRequest;
+        public event EventHandler? StopRequest;
+        public event EventHandler? ToggleRequest;
 
         public void AllowUse(bool enabled)
         {
@@ -27,7 +27,7 @@
         }
 
 
-        private void button_toggle_Click(object sender, EventArgs e)
+        private void button_toggle_Click(object? sender, EventArgs e)
         {
             ToggleRequest?.Invoke(this, e);
         }

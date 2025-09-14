@@ -11,7 +11,7 @@ namespace GFunctions.Winforms.Process
     public class ProcessController<T> : ProcessControllerBase<T>
     {
         //------------------------- Private Members ------------------------
-        public delegate Task DoWorkMethod(T ProcessArgs, IProgress<ProcessProgressArgs> Progress, CancellationToken cToken);
+        public delegate Task DoWorkMethod(T? ProcessArgs, IProgress<ProcessProgressArgs>? Progress, CancellationToken cToken);
 
         public delegate void ProgressMethod(ProcessProgressArgs progArgs);
 
@@ -20,9 +20,9 @@ namespace GFunctions.Winforms.Process
         /// <summary>
         /// The views being controlled by this controller.
         /// </summary>
-        public IProcessView View { get; private set; } = null;
+        public IProcessView View { get; private set; }
 
-        protected T ProcessArgument { get; set; }
+        protected T? ProcessArgument { get; set; }
 
         public List<DoWorkMethod> WorkMethods { get; private set; } = new List<DoWorkMethod>();
         public List<DoWorkMethod> CleanupMethods { get; private set; } = new List<DoWorkMethod>();
@@ -33,7 +33,7 @@ namespace GFunctions.Winforms.Process
         /// Default constructor
         /// </summary>
         /// <param name="logger">Exception logger for the class</param>
-        public ProcessController(IProcessView view, ExceptionLogger logger = null) : base(logger)
+        public ProcessController(IProcessView view, ExceptionLogger? logger = null) : base(logger)
         {
             View = view;
             View.StartRequest += onStartRequest;
@@ -45,13 +45,16 @@ namespace GFunctions.Winforms.Process
         }
 
         //-------------------- Event Methods --------------------
-        private async void onStartRequest(object sender, EventArgs e)
+        private async void onStartRequest(object? sender, EventArgs e)
         {
             try
             {
-                //get the view that sent the command
-                IProcessView v = (IProcessView)sender;
-                await Start(ProcessArgument);
+                if (sender != null)
+                {
+                    //get the view that sent the command
+                    IProcessView v = (IProcessView)sender;
+                    await Start(ProcessArgument);
+                }
             }
             catch (Exception ex)
             {
@@ -59,7 +62,7 @@ namespace GFunctions.Winforms.Process
                 FormattedMessageBox.DisplayError(ex.Message);
             }
         }
-        private void onStopRequest(object sender, EventArgs e)
+        private void onStopRequest(object? sender, EventArgs e)
         {
             try
             {
@@ -72,13 +75,16 @@ namespace GFunctions.Winforms.Process
                 FormattedMessageBox.DisplayError(ex.Message);
             }
         }
-        private async void onToggleRequest(object sender, EventArgs e)
+        private async void onToggleRequest(object? sender, EventArgs e)
         {
             try
             {
-                //get the view that sent the command
-                IProcessView v = (IProcessView)sender;
-                await Toggle(ProcessArgument);
+                if (sender != null)
+                {
+                    //get the view that sent the command
+                    IProcessView v = (IProcessView)sender;
+                    await Toggle(ProcessArgument);
+                }
             }
             catch (Exception ex)
             {
@@ -88,14 +94,14 @@ namespace GFunctions.Winforms.Process
         }
 
         //-------------------- Override functions --------------------
-        protected override void DoCleanup(T ProcessArgs, IProgress<ProcessProgressArgs> Progress, CancellationToken cToken)
+        protected override void DoCleanup(T? ProcessArgs, IProgress<ProcessProgressArgs> Progress, CancellationToken cToken)
         {
             foreach (DoWorkMethod m in CleanupMethods)
             {
                 m(ProcessArgs, Progress, cToken);
             }
         }
-        protected override async Task DoWork(T ProcessArgs, IProgress<ProcessProgressArgs> Progress, CancellationToken cToken)
+        protected override async Task DoWork(T? ProcessArgs, IProgress<ProcessProgressArgs>? Progress, CancellationToken cToken)
         {
             foreach (DoWorkMethod m in WorkMethods)
             {

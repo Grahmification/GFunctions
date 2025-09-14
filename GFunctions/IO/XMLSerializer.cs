@@ -4,16 +4,16 @@ namespace GFunctions.IO
 {
     public class XMLSerializer<T>
     {
-        public static T Load(string fileName, string folderPath = "")
+        public static T? Load(string fileName, string folderPath = "")
         {
             var serializer = new XmlSerializer(typeof(T));
 
-            T output = default; //initialize to default
+            T? output = default; //initialize to default
 
             if (File.Exists(buildfullFilePath(folderPath, fileName))) //file does exist, load config from file
             {
                 using (var fStream = new FileStream(buildfullFilePath(folderPath, fileName), FileMode.Open))
-                    output = (T)serializer.Deserialize(fStream);
+                    output = (T?)serializer.Deserialize(fStream);
             }
 
             return output;

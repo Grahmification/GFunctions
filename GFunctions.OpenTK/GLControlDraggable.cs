@@ -58,8 +58,8 @@ namespace GFunctions.OpenTK
 
         //-------------- Events  ----------------
 
-        public delegate void viewUpdatedDel(object sender, GLControlViewUpdatedEventArgs e);
-        public event viewUpdatedDel ViewUpdated;
+        public delegate void viewUpdatedDel(object? sender, GLControlViewUpdatedEventArgs e);
+        public event viewUpdatedDel? ViewUpdated;
 
         //-------------- Public subs  ----------------
 
@@ -285,27 +285,27 @@ namespace GFunctions.OpenTK
 
         //------------ Subs to listen for control events ------------------
 
-        private void GLControl_MouseDown(object Sender, MouseEventArgs e)
+        private void GLControl_MouseDown(object? Sender, MouseEventArgs e)
         {
             this.DragStarted(Cursor.Position.X, Cursor.Position.Y);
         }
-        private void GLControl_MouseMove(object Sender, MouseEventArgs e)
+        private void GLControl_MouseMove(object? Sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
             {
                 this.Dragged(Cursor.Position.X, Cursor.Position.Y);
             }
         }
-        private void GLControl_MouseUp(object Sender, MouseEventArgs e)
+        private void GLControl_MouseUp(object? Sender, MouseEventArgs e)
         {
             EndDrag();
         }
-        private void GLControl_MouseWheel(object Sender, MouseEventArgs e)
+        private void GLControl_MouseWheel(object? Sender, MouseEventArgs e)
         {
             MouseWheeled(e.Delta);
         }
 
-        private void GLControl_Resized(object Sender, EventArgs e)
+        private void GLControl_Resized(object? Sender, EventArgs e)
         {
             this.Refresh();
         }

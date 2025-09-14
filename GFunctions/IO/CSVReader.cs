@@ -2,7 +2,7 @@
 {
     public class CSVReader
     {
-        private StreamReader _reader = null;
+        private StreamReader? _reader = null;
         private string _fullPath = "";
         private bool _continueSearchFlag = true; //if file does not exist, program will keep searching until this is set to false
         private const int reCheckPeriod = 100; //refresh period in ms to check if a file exists
@@ -54,17 +54,23 @@
 
         public string readline()
         {
+            if (_reader == null)
+                throw new IOException("Cannot read. No file is opened.");
+            
             var line = _reader.ReadLine();
-            return line;
+            return line ?? "";
         }
 
         public string[] readAllLines()
         {
+            if (_reader == null)
+                throw new IOException("Cannot read. No file is opened.");
+
             List<string> lineList = new List<string>();
 
             while (!_reader.EndOfStream)
             {
-                lineList.Add(_reader.ReadLine());
+                lineList.Add(_reader.ReadLine() ?? "");
             }
 
             return lineList.ToArray();

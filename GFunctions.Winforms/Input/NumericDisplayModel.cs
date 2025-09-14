@@ -73,7 +73,7 @@ namespace GFunctions.Winforms.Input
 
         //------------------------- Events -------------------------------------
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         //------------------------- Public Methods -------------------------------------
 
@@ -134,7 +134,7 @@ namespace GFunctions.Winforms.Input
                     input = Math.Round(input.Value, decimals);
                 }
 
-                return Convert.ToString(input);
+                return Convert.ToString(input) ?? "";
             }
         }
     }

@@ -19,7 +19,7 @@ namespace GFunctions.IO
         public string FolderPath { get; private set; } = ""; //optional folder path if desired to save the config files at a location other than with the application, can be absolute or relative
 
         [XmlIgnore]
-        public static Config Instance { get; private set; } // Globally accessable instance of loaded configuration.
+        public static Config? Instance { get; private set; } // Globally accessable instance of loaded configuration.
 
         // ---------------------------------------------------------------------------------------   
 
@@ -56,9 +56,10 @@ namespace GFunctions.IO
             else //file does exist, load config from file
             {
                 using (var fStream = new FileStream(Config.buildfullFilePath(folderPath, fileName), FileMode.Open))
-                    Config.Instance = (Config)serializer.Deserialize(fStream);
+                    Config.Instance = (Config?)serializer.Deserialize(fStream);
 
-                Config.Instance.FolderPath = folderPath;
+                if (Instance != null )
+                    Instance.FolderPath = folderPath;
             }
         }
         // Saves the configuration to file.
@@ -96,7 +97,7 @@ namespace GFunctions.IO
 
         // --------------------------------------------------------------------------------------- 
 
-        public void AddSetting(string settingName, object value = null)
+        public void AddSetting(string settingName, object value)
         {
             if (!settingNames.Contains(settingName)) //only add if the setting name doesn't exist
             {
@@ -242,13 +243,13 @@ namespace GFunctions.IO
                 List<string> LS = LI.ConvertAll<string>(x => x.ToString());
                 return LS;
             }
-            else if (!(value is string) && !(value is int) && !(value is double) && !(value is List<string>) && !(value is null))
+            else if ((value is string) || (value is int) || (value is double) || (value is List<string>))
             {
-                throw new Exception("Invalid setting type. Only single values or lists of string, double, or int can be stored.");
+                return value;
             }
             else
             {
-                return value;
+                throw new Exception("Invalid setting type. Only single values or lists of string, double, or int can be stored.");
             }
         }
     }

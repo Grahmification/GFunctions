@@ -9,8 +9,8 @@
         private StopWatchPrecision _sw = new StopWatchPrecision(); //keeps track of simulation time
         private int _cycleCount = 0;
 
-        public event EventHandler<TimeSimulationStepEventArgs> SimulationDoWorkRequest;
-        public event EventHandler<int> RunFreqUpdated;
+        public event EventHandler<TimeSimulationStepEventArgs>? SimulationDoWorkRequest;
+        public event EventHandler<int>? RunFreqUpdated;
 
         public bool Running
         {

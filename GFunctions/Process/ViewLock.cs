@@ -4,8 +4,8 @@
     {
         public bool ViewInUse { get; private set; } = false;
 
-        public event EventHandler<bool> ViewUseChanged;
-        public event EventHandler ViewReleaseRequest;
+        public event EventHandler<bool>? ViewUseChanged;
+        public event EventHandler? ViewReleaseRequest;
 
         public void StartViewUse()
         {

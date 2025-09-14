@@ -24,12 +24,15 @@
         }
 
 
-        private void TextBox_MouseClick(object Sender, EventArgs e)
+        private void TextBox_MouseClick(object? Sender, EventArgs e)
         {
-            TextBox sendTxt = (TextBox)Sender;
-            sendTxt.SelectAll();
+            if (Sender != null)
+            {
+                TextBox sendTxt = (TextBox)Sender;
+                sendTxt.SelectAll();
+            }
         }
-        private void TextBox_TextChanged(object Sender, EventArgs e)
+        private void TextBox_TextChanged(object? Sender, EventArgs e)
         {
             this.ValidateText();
         }

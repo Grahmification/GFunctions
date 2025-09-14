@@ -45,7 +45,7 @@
         }
 
         //------------------------- Event Methods -------------------------------------
-        private void handleTextChanged(object sender, EventArgs e)
+        private void handleTextChanged(object? sender, EventArgs e)
         {
             try
             {
@@ -60,10 +60,13 @@
             }
             catch (Exception) { }
         }
-        private void TextBox_MouseClick(object Sender, EventArgs e)
+        private void TextBox_MouseClick(object? Sender, EventArgs e)
         {
-            TextBox sendTxt = (TextBox)Sender;
-            sendTxt.SelectAll();
+            if (Sender != null)
+            {
+                TextBox sendTxt = (TextBox)Sender;
+                sendTxt.SelectAll();
+            }
         }
     }
 }

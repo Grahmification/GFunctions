@@ -2,7 +2,7 @@
 {
     public class CSVWriter
     {
-        private StreamWriter _writer = null;
+        private StreamWriter _writer;
 
         public CSVWriter(string folder, string fileName)
         {

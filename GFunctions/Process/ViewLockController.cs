@@ -28,7 +28,7 @@
         }
 
 
-        private void onViewUseChanged(object sender, bool e)
+        private void onViewUseChanged(object? sender, bool e)
         {
             if (e == true)
             {
@@ -39,7 +39,7 @@
                 ReleaseGlobalViewLock();
             }
         }
-        private void onViewReleaseRequest(object sender, EventArgs e)
+        private void onViewReleaseRequest(object? sender, EventArgs e)
         {
             ReleaseAllViews();
         }

@@ -17,7 +17,7 @@ namespace GFunctions.Process
         /// <summary>
         /// Fires whenever the progress gets updated (thread safe)
         /// </summary>
-        public event EventHandler<ProcessProgressArgs> ProgressUpdated;
+        public event EventHandler<ProcessProgressArgs>? ProgressUpdated;
 
         /// <summary>
         /// Token source for stopping the running process
@@ -27,7 +27,7 @@ namespace GFunctions.Process
         /// <summary>
         /// Exception logger for the controller
         /// </summary>
-        protected ExceptionLogger exLogger;
+        protected ExceptionLogger? exLogger;
 
         //-------------------- Public functions --------------------
 
@@ -35,7 +35,7 @@ namespace GFunctions.Process
         /// Default constructor
         /// </summary>
         /// <param name="logger">Exception logger for the class</param>
-        public ProcessControllerBase(ExceptionLogger logger = null)
+        public ProcessControllerBase(ExceptionLogger? logger = null)
         {
             exLogger = logger;
         }
@@ -45,7 +45,7 @@ namespace GFunctions.Process
         /// </summary>
         /// <param name="ProcessArgs">Arguments to be passed into the process</param>
         /// <returns></returns>
-        public async Task Start(T ProcessArgs)
+        public async Task Start(T? ProcessArgs)
         {
             try
             {
@@ -88,7 +88,7 @@ namespace GFunctions.Process
         /// </summary>
         /// <param name="ProcessArgs">Arguments to be passed into the process</param>
         /// <returns></returns>
-        public async Task Toggle(T ProcessArgs)
+        public async Task Toggle(T? ProcessArgs)
         {
             try
             {
@@ -109,7 +109,7 @@ namespace GFunctions.Process
         /// <summary>
         /// Gets called by the primary background work process
         /// </summary>
-        protected virtual async Task DoWork(T ProcessArgs, IProgress<ProcessProgressArgs> Progress, CancellationToken cToken)
+        protected virtual async Task DoWork(T? ProcessArgs, IProgress<ProcessProgressArgs>? Progress, CancellationToken cToken)
         {
             //prevent the await error from showing up
             await Task.Delay(1);
@@ -118,7 +118,7 @@ namespace GFunctions.Process
         /// <summary>
         /// Gets called by the primary background work process in the finally block
         /// </summary>
-        protected virtual void DoCleanup(T ProcessArgs, IProgress<ProcessProgressArgs> Progress, CancellationToken cToken) { }
+        protected virtual void DoCleanup(T? ProcessArgs, IProgress<ProcessProgressArgs> Progress, CancellationToken cToken) { }
 
         /// <summary>
         /// Gets called whenever progress is updated by the background process
@@ -135,7 +135,7 @@ namespace GFunctions.Process
         /// <param name="Progress">Progress reporter for the process</param>
         /// <param name="cToken">Cancellation token for the process</param>
         /// <returns></returns>
-        private async Task _DoWork(T ProcessArgs, IProgress<ProcessProgressArgs> Progress, CancellationToken cToken)
+        private async Task _DoWork(T? ProcessArgs, IProgress<ProcessProgressArgs> Progress, CancellationToken cToken)
         {
             Running = true;
 
