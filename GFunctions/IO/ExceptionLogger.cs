@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Windows.Forms;
 
 
 namespace GFunctions.IO
@@ -20,19 +19,6 @@ namespace GFunctions.IO
             try
             {
                 this.writeTextDatedBlock(ex.ToString());
-            }
-            catch
-            {
-
-            }
-        }
-
-        public static void DisplayError(string message)
-        {
-            try
-            {
-
-                MessageBox.Show("An error occurred: " + message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             catch
             {
