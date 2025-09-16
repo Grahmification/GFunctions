@@ -2,31 +2,48 @@
 
 namespace GFunctions.Timing
 {
+    /// <summary>
+    /// A stopwatch that operations much more accurately than the default <see cref="Stopwatch"/> becuase it uses ticks.
+    /// </summary>
     public class StopWatchPrecision
     {
-        //Created because the timer operates much more accurately working in ticks than ms
+        private Stopwatch _sw = new();
+        private readonly double _freq = Stopwatch.Frequency / 1000.0; //number of milliseconds in one timer tick
 
-        private Stopwatch _sw = new Stopwatch();
-        private double _freq = Stopwatch.Frequency / 1000.0; //number of milliseconds in one timer tick
+        /// <summary>
+        /// True if the stopwatch is running
+        /// </summary>
+        public bool IsRunning => _sw.IsRunning;
 
-        public bool IsRunning { get { return _sw.IsRunning; } }
-        public double ElapsedMilliseconds { get { return this._sw.ElapsedTicks / _freq; } }
-        public double ElapsedSeconds { get { return this._sw.ElapsedTicks / (_freq * 1000.0); } }
+        /// <summary>
+        /// The number of milliseconds since starting
+        /// </summary>
+        public double ElapsedMilliseconds => _sw.ElapsedTicks / _freq;
 
-        public StopWatchPrecision()
-        {
-            _sw = new Stopwatch();
-            _freq = Stopwatch.Frequency / 1000.0;
-        }
+        /// <summary>
+        /// The number of seconds since starting
+        /// </summary>
+        public double ElapsedSeconds => _sw.ElapsedTicks / (_freq * 1000.0);
 
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public StopWatchPrecision() { }
+
+        /// <summary>
+        /// Start the stopwatch at T=0
+        /// </summary>
         public void StartNew()
         {
             _sw = Stopwatch.StartNew();
         }
+        
+        /// <summary>
+        /// Stop of the stopwatch
+        /// </summary>
         public void Stop()
         {
             _sw.Stop();
         }
-
     }
 }

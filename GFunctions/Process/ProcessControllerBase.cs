@@ -2,6 +2,10 @@
 
 namespace GFunctions.Process
 {
+    /// <summary>
+    /// Base definition for a class which manages a process running in the background
+    /// </summary>
+    /// <typeparam name="T">Argument to pass into the background process when it starts</typeparam>
     public class ProcessControllerBase<T>
     {
         /// <summary>
@@ -43,24 +47,24 @@ namespace GFunctions.Process
         /// <summary>
         /// Starts the process
         /// </summary>
-        /// <param name="ProcessArgs">Arguments to be passed into the process</param>
+        /// <param name="processArgs">Arguments to be passed into the process</param>
         /// <returns></returns>
-        public async Task Start(T? ProcessArgs)
+        public async Task Start(T? processArgs)
         {
             try
             {
-                if (Running == false)
+                if (!Running)
                 {
                     tSource = new CancellationTokenSource();
 
-                    var Progress = new Progress<ProcessProgressArgs>(s => _onProgress(s));
-                    await _DoWork(ProcessArgs, Progress, tSource.Token);
+                    var Progress = new Progress<ProcessProgressArgs>(s => _OnProgress(s));
+                    await _DoWork(processArgs, Progress, tSource.Token);
                 }
             }
             catch (Exception ex)
             {
                 exLogger?.Log(ex);
-                _onProgress(new ProcessProgressArgs(CurrentProgress.Progress, ProcessStatus.Error, ex.Message));
+                _OnProgress(new ProcessProgressArgs(CurrentProgress.Progress, ProcessStatus.Error, ex.Message));
             }
         }
 
@@ -74,12 +78,12 @@ namespace GFunctions.Process
                 tSource.Cancel();
 
                 if (Running)
-                    _onProgress(new ProcessProgressArgs(CurrentProgress.Progress, ProcessStatus.Cancelling));
+                    _OnProgress(new ProcessProgressArgs(CurrentProgress.Progress, ProcessStatus.Cancelling));
             }
             catch (Exception ex)
             {
                 exLogger?.Log(ex);
-                _onProgress(new ProcessProgressArgs(CurrentProgress.Progress, ProcessStatus.Error, ex.Message));
+                _OnProgress(new ProcessProgressArgs(CurrentProgress.Progress, ProcessStatus.Error, ex.Message));
             }
         }
 
@@ -100,7 +104,7 @@ namespace GFunctions.Process
             catch (Exception ex)
             {
                 exLogger?.Log(ex);
-                _onProgress(new ProcessProgressArgs(CurrentProgress.Progress, ProcessStatus.Error, ex.Message));
+                _OnProgress(new ProcessProgressArgs(CurrentProgress.Progress, ProcessStatus.Error, ex.Message));
             }
         }
 
@@ -109,7 +113,10 @@ namespace GFunctions.Process
         /// <summary>
         /// Gets called by the primary background work process
         /// </summary>
-        protected virtual async Task DoWork(T? ProcessArgs, IProgress<ProcessProgressArgs>? Progress, CancellationToken cToken)
+        /// <param name="processArgs">Misc arguments to be passed into the process</param>
+        /// <param name="progress">Progress reporter for the process</param>
+        /// <param name="cToken">Cancellation token for the process</param>
+        protected virtual async Task DoWork(T? processArgs, IProgress<ProcessProgressArgs>? progress, CancellationToken cToken)
         {
             //prevent the await error from showing up
             await Task.Delay(1);
@@ -117,56 +124,59 @@ namespace GFunctions.Process
 
         /// <summary>
         /// Gets called by the primary background work process in the finally block
+        /// <param name="processArgs">Misc arguments to be passed into the process</param>
+        /// <param name="progress">Progress reporter for the process</param>
+        /// <param name="cToken">Cancellation token for the process</param>
         /// </summary>
-        protected virtual void DoCleanup(T? ProcessArgs, IProgress<ProcessProgressArgs> Progress, CancellationToken cToken) { }
+        protected virtual void DoCleanup(T? processArgs, IProgress<ProcessProgressArgs> progress, CancellationToken cToken) { }
 
         /// <summary>
-        /// Gets called whenever progress is updated by the background process
+        /// Gets called in the foreground thread whenever progress is updated by the background process
         /// </summary>
         /// <param name="progArgs">Information about the progress</param>
-        protected virtual void onProgress(ProcessProgressArgs progArgs) { }
+        protected virtual void OnProgress(ProcessProgressArgs progArgs) { }
 
         //-------------------- Private helpers --------------------
 
         /// <summary>
         /// Primary method for doing work in the background
         /// </summary>
-        /// <param name="ProcessArgs">Misc arguments to be passed into the process</param>
-        /// <param name="Progress">Progress reporter for the process</param>
+        /// <param name="processArgs">Misc arguments to be passed into the process</param>
+        /// <param name="progress">Progress reporter for the process</param>
         /// <param name="cToken">Cancellation token for the process</param>
         /// <returns></returns>
-        private async Task _DoWork(T? ProcessArgs, IProgress<ProcessProgressArgs> Progress, CancellationToken cToken)
+        private async Task _DoWork(T? processArgs, IProgress<ProcessProgressArgs> progress, CancellationToken cToken)
         {
             Running = true;
 
             try
             {
                 //Report start progress here. Report 1% so progress bar shows a tiny change
-                Progress?.Report(new ProcessProgressArgs(0.01, ProcessStatus.Running));
+                progress?.Report(new ProcessProgressArgs(0.01, ProcessStatus.Running));
 
                 //get the parent to do the actual process work
-                await DoWork(ProcessArgs, Progress, cToken);
+                await DoWork(processArgs, progress, cToken);
 
                 //cleanup - we don't want to report this if an error occurs
                 if (tSource.IsCancellationRequested)
-                    Progress?.Report(new ProcessProgressArgs(0, ProcessStatus.Cancelled));
+                    progress?.Report(new ProcessProgressArgs(0, ProcessStatus.Cancelled));
                 else
-                    Progress?.Report(new ProcessProgressArgs(1.0, ProcessStatus.Complete));
+                    progress?.Report(new ProcessProgressArgs(1.0, ProcessStatus.Complete));
             }
             //We don't care about cancelled exceptions, this is ok
             catch (TaskCanceledException)
             {
-                Progress?.Report(new ProcessProgressArgs(0, ProcessStatus.Cancelled));
+                progress?.Report(new ProcessProgressArgs(0, ProcessStatus.Cancelled));
             }
             catch (Exception ex)
             {
                 exLogger?.Log(ex);
-                Progress?.Report(new ProcessProgressArgs(CurrentProgress.Progress, ProcessStatus.Error, ex.Message));
+                progress?.Report(new ProcessProgressArgs(CurrentProgress.Progress, ProcessStatus.Error, ex.Message));
             }
             finally
             {
                 Running = false;
-                DoCleanup(ProcessArgs, Progress, cToken);
+                DoCleanup(processArgs, progress, cToken);
             }
         }
 
@@ -174,12 +184,11 @@ namespace GFunctions.Process
         /// Private helper which gets called by process progressReporter
         /// </summary>
         /// <param name="progArgs"></param>
-        private void _onProgress(ProcessProgressArgs progArgs)
+        private void _OnProgress(ProcessProgressArgs progArgs)
         {
             CurrentProgress = progArgs;
-            onProgress(progArgs);
+            OnProgress(progArgs);
             ProgressUpdated?.Invoke(this, progArgs);
         }
-
     }
 }

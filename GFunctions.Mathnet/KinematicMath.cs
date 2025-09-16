@@ -26,13 +26,21 @@ using MathNet.Numerics.LinearAlgebra.Double;
 
 namespace GFunctions.Mathnet
 {
+    /// <summary>
+    /// Contains various calculation methods for kinematics
+    /// </summary>
     public class KinematicMath
     {
-        public static DenseMatrix RotationMatrixFromPRY(double[] Rot)
+        /// <summary>
+        /// Gets a rotation matrix from pitch roll yaw angles
+        /// </summary>
+        /// <param name="rotation">Pitch, roll, yaw in degrees</param>
+        /// <returns>Equivalent rotation matrix</returns>
+        public static DenseMatrix RotationMatrixFromPRY(double[] rotation)
         {
-            double Pitch = Rot[0] * Math.PI / 180.0;
-            double Roll = Rot[1] * Math.PI / 180.0;
-            double Yaw = Rot[2] * Math.PI / 180.0;
+            double Pitch = rotation[0] * Math.PI / 180.0;
+            double Roll = rotation[1] * Math.PI / 180.0;
+            double Yaw = rotation[2] * Math.PI / 180.0;
 
             //Math: http://planning.cs.uiuc.edu/node102.html
 
@@ -83,6 +91,13 @@ namespace GFunctions.Mathnet
 
             return output;
         }
+
+        /// <summary>
+        /// Gets the length between two Nd vectors of the same order
+        /// </summary>
+        /// <param name="pos1">Position 1 (x,y,....)</param>
+        /// <param name="pos2">Position 2 (x,y,....)</param>
+        /// <returns>Distance between the two positions</returns>
         public static double VectorLength(double[] pos1, double[] pos2)
         {
             double output = 0;
@@ -94,55 +109,79 @@ namespace GFunctions.Mathnet
 
             return Math.Sqrt(output);
         }
+
+        /// <summary>
+        /// Rotates a vector by the given pitch roll yaw angles
+        /// </summary>
+        /// <param name="vector">The vector to rotate (x,y,z)</param>
+        /// <param name="rotationPRY">Pitch, roll, yaw rotation in degrees</param>
+        /// <returns>The rotated vector (x,y,z)</returns>
         public static double[] RotateVector(double[] vector, double[] rotationPRY)
         {
-            DenseVector vectorObj = new DenseVector(vector); //local vector without rotation;
+            DenseVector vectorObj = new(vector); //local vector without rotation;
             DenseMatrix rotation = RotationMatrixFromPRY(rotationPRY);
 
             DenseVector rotatedVector = rotation * vectorObj; //apply rotation
 
-            return rotatedVector.ToArray();
+            return [.. rotatedVector];
         }
 
-
-        public static double[] CalcGlobalCoord(double[] LocalCoord, double[] Trans1, double[] Trans2, double[] Rot)
+        /// <summary>
+        /// Calculates a coordinates with the applied translations and rotation
+        /// </summary>
+        /// <param name="localCoord">The local coordinate (x,y,z)</param>
+        /// <param name="trans1">First translation distance (x,y,z)</param>
+        /// <param name="trans2">Second translation distance (x,y,z)</param>
+        /// <param name="rotation">Pitch, roll, yaw rotation in degrees</param>
+        /// <returns>Transformed coordinates (x,y,z)</returns>
+        public static double[] CalcGlobalCoord(double[] localCoord, double[] trans1, double[] trans2, double[] rotation)
         {
-            DenseMatrix LocalCoords = new DenseMatrix(3, 1);
-            LocalCoords.SetColumn(0, LocalCoord);
+            DenseMatrix LocalCoords = new(3, 1);
+            LocalCoords.SetColumn(0, localCoord);
 
-            DenseMatrix TranslationMat = new DenseMatrix(3, 1);
-            TranslationMat.SetColumn(0, Trans1);
+            DenseMatrix TranslationMat = new(3, 1);
+            TranslationMat.SetColumn(0, trans1);
 
-            DenseMatrix StartingMat = new DenseMatrix(3, 1);
-            StartingMat.SetColumn(0, Trans2);
+            DenseMatrix StartingMat = new(3, 1);
+            StartingMat.SetColumn(0, trans2);
 
-            DenseMatrix GlobalCoords = (KinematicMath.RotationMatrixFromPRY(Rot) * LocalCoords) + TranslationMat + StartingMat;
+            DenseMatrix GlobalCoords = (RotationMatrixFromPRY(rotation) * LocalCoords) + TranslationMat + StartingMat;
 
-            return new double[] { GlobalCoords[0, 0], GlobalCoords[1, 0], GlobalCoords[2, 0] };
+            return [GlobalCoords[0, 0], GlobalCoords[1, 0], GlobalCoords[2, 0]];
         }
-        public static double[] CalcGlobalCoord2(double[] LocalCoord, double[] Trans1, double[] Trans2, double[] Rot, double[]? RelativeRotCenter = null)
+
+        /// <summary>
+        /// Calculates a coordinates with the applied translations and rotation
+        /// </summary>
+        /// <param name="localCoord">The local coordinate (x,y,z)</param>
+        /// <param name="trans1">Translation distance (x,y,z) before rotation</param>
+        /// <param name="trans2">Translation distance (x,y,z) after rotation</param>
+        /// <param name="rotation">Pitch, roll, yaw rotation in degrees</param>
+        /// <param name="relativeRotCenter">Coordinates of the rotation center (x,y,z) relative to the local coordinate</param>
+        /// <returns>Transformed coordinates (x,y,z)</returns>
+        public static double[] CalcGlobalCoord2(double[] localCoord, double[] trans1, double[] trans2, double[] rotation, double[]? relativeRotCenter = null)
         {
-            double[] coords = new double[] { 0, 0, 0 };
+            double[] coords = [0, 0, 0];
 
-            if (RelativeRotCenter != null)
-                coords = RelativeRotCenter;
+            if (relativeRotCenter != null)
+                coords = relativeRotCenter;
 
-            DenseMatrix RotCenter = new DenseMatrix(3, 1);
+            DenseMatrix RotCenter = new(3, 1);
             RotCenter.SetColumn(0, coords);
 
-            DenseMatrix LocalCoords = new DenseMatrix(3, 1);
-            LocalCoords.SetColumn(0, LocalCoord);
+            DenseMatrix LocalCoords = new(3, 1);
+            LocalCoords.SetColumn(0, localCoord);
 
-            DenseMatrix TranslationMat = new DenseMatrix(3, 1);
-            TranslationMat.SetColumn(0, Trans1);
+            DenseMatrix TranslationMat = new(3, 1);
+            TranslationMat.SetColumn(0, trans1);
 
-            DenseMatrix TranslationMat2 = new DenseMatrix(3, 1);
-            TranslationMat2.SetColumn(0, Trans2);
+            DenseMatrix TranslationMat2 = new(3, 1);
+            TranslationMat2.SetColumn(0, trans2);
 
 
-            DenseMatrix GlobalCoords = (KinematicMath.RotationMatrixFromPRY(Rot) * (LocalCoords - RotCenter + TranslationMat)) + TranslationMat2 + RotCenter; //Rotcenter needs to be added before rotation, then removed after
+            DenseMatrix GlobalCoords = (RotationMatrixFromPRY(rotation) * (LocalCoords - RotCenter + TranslationMat)) + TranslationMat2 + RotCenter; //Rotcenter needs to be added before rotation, then removed after
 
-            return new double[] { GlobalCoords[0, 0], GlobalCoords[1, 0], GlobalCoords[2, 0] };
+            return [GlobalCoords[0, 0], GlobalCoords[1, 0], GlobalCoords[2, 0]];
         }
     }
 }

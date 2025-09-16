@@ -70,7 +70,7 @@ namespace GFunctions.Mathnet
         {
             int n = Convert.ToInt32(args[0]);
 
-            if (IsPowerOfTwo(n) == false)
+            if (!IsPowerOfTwo(n))
                 throw new Exception("FFT Can only capture values in powers of 2.");
 
 

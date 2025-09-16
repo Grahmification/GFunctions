@@ -15,7 +15,7 @@
             if (!nowDateOverride.HasValue)
                 nowDateOverride = DateTime.Now;
 
-            return string.Format("{0}-{1}-{2}", nowDateOverride?.Year, nowDateOverride?.Month, nowDateOverride?.Day);
+            return $"{nowDateOverride?.Year}-{nowDateOverride?.Month}-{nowDateOverride?.Day}";
         }
 
         /// <summary>
@@ -28,17 +28,17 @@
             if (!nowDateOverride.HasValue)
                 nowDateOverride = DateTime.Now;
 
-            return string.Format("{0}h{1}m{2}s", nowDateOverride?.Hour, nowDateOverride?.Minute, nowDateOverride?.Second);
+            return $"{nowDateOverride?.Hour}h{nowDateOverride?.Minute}m{nowDateOverride?.Second}s";
         }
 
         /// <summary>
         /// Gets a date and time stamp string yy-mm-dd xxhyymzzs
         /// </summary>
         /// <param name="nowDateOverride">Override for the current time</param>
-        /// <returns>The formatted date & time stamp string</returns>
+        /// <returns>The formatted date and time stamp string</returns>
         public static string DateTimeStamp(DateTime? nowDateOverride = null)
         {
-            return string.Format("{0} {1}", DateStamp(nowDateOverride), TimeStamp(nowDateOverride));
+            return $"{DateStamp(nowDateOverride)} {TimeStamp(nowDateOverride)}";
         }
 
         /// <summary>

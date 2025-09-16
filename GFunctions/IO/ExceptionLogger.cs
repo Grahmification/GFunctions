@@ -1,26 +1,34 @@
 ﻿namespace GFunctions.IO
 {
+    /// <summary>
+    /// Generic definition of an exception logging class
+    /// </summary>
     public interface IExceptionLogger
     {
-        void Log(Exception Ex);
+        /// <summary>
+        /// Log the exception
+        /// </summary>
+        /// <param name="ex">Exception to log</param>
+        void Log(Exception ex);
     }
-    public class ExceptionLogger : Logger, IExceptionLogger
+
+    /// <summary>
+    /// Class for easily logging exceptions
+    /// </summary>
+    /// <param name="ApplicationPath">The root path of the application</param>
+    public class ExceptionLogger(string ApplicationPath) : Logger(ApplicationPath), IExceptionLogger
     {
-        public ExceptionLogger(string ApplicationPath) : base(ApplicationPath)
-        {
-
-        }
-
+        /// <summary>
+        /// Log the exception
+        /// </summary>
+        /// <param name="ex">Exception to log</param>
         public void Log(Exception ex)
         {
             try
             {
-                this.writeTextDatedBlock(ex.ToString());
+                WriteTextDatedBlock(ex.ToString());
             }
-            catch
-            {
-
-            }
+            catch { }
         }
     }
 }

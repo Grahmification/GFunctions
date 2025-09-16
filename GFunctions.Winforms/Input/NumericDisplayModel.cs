@@ -11,7 +11,6 @@ namespace GFunctions.Winforms.Input
         private string valueString = "";
 
         //------------------------- Public Properties -------------------------------------
-
         /// <summary>
         /// The amount of decimal places to display (-1 = all)
         /// </summary>
@@ -43,28 +42,21 @@ namespace GFunctions.Winforms.Input
                 if (val is null)
                     return val;
 
-                return convertInput(val.Value);
+                return ConvertInput(val.Value);
             }
             set
             {
                 if (value is null)
                     ValueString = NullDoubleToString(value, DecimalPlaces);
                 else
-                    ValueString = NullDoubleToString(convertOutput(value.Value), DecimalPlaces);
+                    ValueString = NullDoubleToString(ConvertOutput(value.Value), DecimalPlaces);
             }
         }
 
         /// <summary>
         /// True if the textbox value is a valid double
         /// </summary>
-        bool ValueValid { 
-            get 
-            {
-                if (Value is null)
-                    return false;
-                else
-                    return true;
-            } }
+        public bool ValueValid => Value is not null; 
 
         /// <summary>
         /// The conversion ratio for the <see cref="Value"/>. Gets multiplied to the input
@@ -72,11 +64,13 @@ namespace GFunctions.Winforms.Input
         public double ConversionRatio { get; set; } = 1;
 
         //------------------------- Events -------------------------------------
-
+        
+        /// <summary>
+        /// Fires when a property of the model has changed
+        /// </summary>
         public event PropertyChangedEventHandler? PropertyChanged;
 
         //------------------------- Public Methods -------------------------------------
-
         /// <summary>
         /// Default Constructor
         /// </summary>
@@ -86,18 +80,16 @@ namespace GFunctions.Winforms.Input
         }
 
         //------------------------- Private Methods -------------------------------------
-
-        private double convertInput(double input)
+        private double ConvertInput(double input)
         {
             return input *= ConversionRatio;
         }
-        private double convertOutput(double output)
+        private double ConvertOutput(double output)
         {
             return output /= ConversionRatio;
         }
 
         //------------------------- Static Methods -------------------------------------
-
         /// <summary>
         /// Converts a string to double, or null if invalid input
         /// </summary>

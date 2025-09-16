@@ -5,7 +5,6 @@
     /// </summary>
     public static class FormattedMessageBox
     {
-
         /// <summary>
         /// Displays a user message in a <see cref="MessageBox"/>
         /// </summary>
@@ -27,7 +26,7 @@
         /// <returns>Result from the message box button</returns>
         public static DialogResult DisplayError(string message)
         {
-            return MessageBox.Show("An error occurred: " + message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return MessageBox.Show($"An error occurred: {message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 }

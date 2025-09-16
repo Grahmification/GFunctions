@@ -186,8 +186,19 @@
     /// </summary>
     public enum IOFileTypes
     {
+        /// <summary>
+        /// .csv file
+        /// </summary>
         CSV,
+
+        /// <summary>
+        /// .sqlite file
+        /// </summary>
         Sqlite,
+
+        /// <summary>
+        /// .png image file
+        /// </summary>
         ImagePNG
     }
 }
