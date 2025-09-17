@@ -42,7 +42,7 @@ namespace GFunctions.OpenTK
         /// <param name="width">Width of the cube</param>
         public static void Cube(Color Clr, double[] Pos, double width)
         {
-            GL.Color3(Clr);
+            GL.Color4(Clr);
 
             GL.Begin(PrimitiveType.Quads);
             GL.Vertex3(Pos[0] + width / 2.0, Pos[1] + width / 2.0, Pos[2] + width / 2.0);
@@ -87,7 +87,7 @@ namespace GFunctions.OpenTK
         /// <param name="thickness">Line thickness (default 1)</param>
         public static void Line(Color Clr, double[] End1, double[] End2, double thickness = 1)
         {
-            GL.Color3(Clr);
+            GL.Color4(Clr);
 
             GL.Begin(PrimitiveType.Lines);
 
@@ -131,7 +131,7 @@ namespace GFunctions.OpenTK
                     //draw line
                     GLObjects.Line(Clr, Pos, new double[] { Pos[0] + vect.X, Pos[1] + vect.Y, Pos[2] + vect.Z });
 
-                    GL.Color3(Clr);
+                    GL.Color4(Clr);
                     GL.Begin(PrimitiveType.Triangles);
                     Vector3 endPt = Vector3.Multiply(vect, (float)0.8);
                     GL.Vertex3(Pos[0] + vect.X, Pos[1] + vect.Y, Pos[2] + vect.Z);

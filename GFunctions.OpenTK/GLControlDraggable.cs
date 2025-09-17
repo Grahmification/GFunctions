@@ -1,4 +1,4 @@
-﻿/*Licence Declaration:
+/*Licence Declaration:
 
 This code uses the OpenTK library under the MIT License:
 
@@ -32,6 +32,7 @@ namespace GFunctions.OpenTK
 {
     /// <summary>
     /// Extends a <see cref="GLControl"/> with mouse drag (rotation, panning) and zoom functionality
+    /// Note: This class requires OpenGL 2.1 or earlier to work. Ensure the GLControl APIVerion = 2.1.0.0 and Profile = Any
     /// </summary>
     public class GLControlDraggable
     {
@@ -99,6 +100,7 @@ namespace GFunctions.OpenTK
             control.MouseUp += GLControl_MouseUp;
             control.MouseWheel += GLControl_MouseWheel;
             control.Resize += GLControl_Resized;
+            control.Paint += GLControl_Paint;
 
             // Update background color of form and refresh to display any inital objects
             GL.ClearColor(Color.Black);
@@ -340,6 +342,10 @@ namespace GFunctions.OpenTK
             MouseWheeled(e.Delta);
         }
         private void GLControl_Resized(object? Sender, EventArgs e)
+        {
+            Refresh();
+        }
+        private void GLControl_Paint(object? sender, PaintEventArgs e)
         {
             Refresh();
         }
