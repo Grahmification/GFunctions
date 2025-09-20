@@ -59,5 +59,32 @@
             return new DirectoryInfo(fullPath);
         }
 
+        /// <summary>
+        /// Prepare a path for saving a file. Create folders if needed and change the name to prevent duplicates
+        /// </summary>
+        /// <param name="filePath">The full filepath</param>
+        /// <param name="validateExtension">Check if the file has a valid extension (".csv")</param>
+        /// <returns></returns>
+        /// <exception cref="FormatException"></exception>
+        public static string PrepareSaveFilePath(string filePath, string validateExtension = "")
+        {
+            var file = new FileInfo(filePath);
+            var folder = file.Directory;
+            var fileName = file.Name;
+
+            if (folder == null)
+            {
+                throw new NullReferenceException($"The file path {filePath} is invalid");
+            }
+
+            if (!folder.Exists)
+                folder.Create();
+
+            if (validateExtension != "" && file.Extension != validateExtension)
+                throw new FormatException($"File extension is not {validateExtension}.");
+
+            return Path.Combine(folder.FullName, $"{fileName}");
+        }
+
     }
 }
