@@ -7,7 +7,7 @@
     {
         private bool _firstCycle = true;
 
-        private double _prevProcessVar = 0;
+        private double _prevFeedbackValue = 0;
         private double _previousError = 0;
 
         private double _target = 0;
@@ -40,21 +40,19 @@
         public double SatLimit { get; set; } = 0;
 
         /// <summary>
-        /// If True, d is calculated from output change, not error change (isolating it from setpoint changes)
+        /// If True, d is calculated from feedback change, not error change (isolating it from setpoint changes)
         /// </summary>
         public bool TargetIsolatedDerivative { get; set; } = true;
 
         /// <summary>
         /// Default constructor
         /// </summary>
-        /// <param name="gain">Global controller gain</param>
         /// <param name="p">Proportional gain</param>
         /// <param name="i">Integral gain</param>
         /// <param name="d">Derivative gain</param>
         /// <param name="saturationLimit">Limits max/min output value of controller, 0 = no limit</param>
-        public PIDController(double gain, double p, double i, double d, double saturationLimit = 0)
+        public PIDController(double p, double i, double d, double saturationLimit = 0)
         {
-            Gain = gain;
             P = p;
             I = i;
             D = d;
@@ -73,48 +71,49 @@
         /// <summary>
         /// Computes one cycle of the controller, calculating the output value
         /// </summary>
-        /// <param name="processVar">The feedback value from the system, used to calculate error</param>
+        /// <param name="feedbackValue">The feedback value from the system, used to calculate error</param>
         /// <param name="timeStep">The delta t value</param>
         /// <returns>The controller output</returns>
-        public double CalculateOutput(double processVar, double timeStep)
+        public double CalculateOutput(double feedbackValue, double timeStep)
         {
-            var error = _target - processVar; //calculate error
+            var error = _target - feedbackValue; // Calculate error
 
+            // No previous error data saved
             if (_firstCycle)
             {
-                _previousError = error; //no previous error data saved
-                _prevProcessVar = processVar;
+                _previousError = error;
+                _prevFeedbackValue = feedbackValue;
+                _firstCycle = false;
             }
 
             _integralSum += Calculus.Integrate(error, timeStep);
 
             double output = 0;
-            output += P * error; //proportional term
-            output += I * _integralSum; //integral term 
+            output += P * error; // Proportional term
+            output += I * _integralSum; // Integral term
 
             if (TargetIsolatedDerivative)
             {
-                output += D * Calculus.Derivative(_prevProcessVar, processVar, timeStep); //derivative from process variable
+                output += D * Calculus.Derivative(_prevFeedbackValue, feedbackValue, timeStep); // Derivative from process variable only
             }
             else
             {
-                output += D * Calculus.Derivative(_previousError, error, timeStep); //derivative from process variable
+                output += D * Calculus.Derivative(_previousError, error, timeStep); // Derivative from error
             }
 
+            output *= Gain; // Apply the gain
+            output = CheckSatuationLimit(output, SatLimit); // Check if the output is inside the saturation limit
 
-            output *= Gain; //apply the gain
-            output = CheckSatuationLimit(output, SatLimit); //check if the output is inside the saturation limit
-
-            _previousError = error; //save current value for next cycle
-            _prevProcessVar = processVar;
-            _firstCycle = false;
+            // Save current values for next cycle
+            _previousError = error;
+            _prevFeedbackValue = feedbackValue;
 
             return output;
         }
 
         private static double CheckSatuationLimit(double output, double satLimit)
         {
-            if (satLimit == 0) //0 = no saturation limit
+            if (satLimit == 0) // 0 = no saturation limit
                 return output;
 
             if (output > satLimit)
@@ -123,7 +122,7 @@
             if (output < satLimit * -1)
                 return satLimit * -1;
 
-            return output; //output is inside limit
+            return output; // Output is inside limit
         }
     }
 }
