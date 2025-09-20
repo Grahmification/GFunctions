@@ -31,7 +31,7 @@
         /// <param name="fileName">File name</param>
         public async Task Open(string folder, string fileName)
         {
-            FilePath = Paths.BuildFullFilePath(fileName, folder);
+            FilePath = Path.Combine(folder, fileName);
             await Open(FilePath);
         }
 

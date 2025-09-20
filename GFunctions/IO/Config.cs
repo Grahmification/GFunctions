@@ -65,7 +65,7 @@ namespace GFunctions.IO
         /// <returns></returns>
         public static bool DataExists(string folderPath = DefaultFolderPath)
         {
-            return File.Exists(Paths.BuildFullFilePath(FileName, folderPath)) && File.Exists(Paths.BuildFullFilePath(FileNameDefault,folderPath));
+            return File.Exists(Path.Combine(folderPath, FileName)) && File.Exists(Path.Combine(folderPath, FileNameDefault));
         }
 
         /// <summary>
@@ -95,7 +95,7 @@ namespace GFunctions.IO
         {
             var serializer = new XmlSerializer(typeof(Config));
 
-            if (!File.Exists(Paths.BuildFullFilePath(fileName, folderPath))) //file does not exist, no previous configuration has been saved
+            if (!File.Exists(Path.Combine(folderPath, fileName))) //file does not exist, no previous configuration has been saved
             {
                 Instance = new Config
                 {
@@ -104,10 +104,10 @@ namespace GFunctions.IO
             }
             else //file does exist, load config from file
             {
-                using (var fStream = new FileStream(Paths.BuildFullFilePath(fileName, folderPath), FileMode.Open))
+                using (var fStream = new FileStream(Path.Combine(folderPath, fileName), FileMode.Open))
                     Instance = (Config?)serializer.Deserialize(fStream);
 
-                if (Instance != null )
+                if (Instance != null)
                     Instance.FolderPath = folderPath;
             }
         }
@@ -123,13 +123,13 @@ namespace GFunctions.IO
                 Directory.CreateDirectory(this.FolderPath); //create the settings folder if it doesn't exist
 
 
-            if (!File.Exists(Paths.BuildFullFilePath(FileName, FolderPath))) //file does not exist, create default settings file on first save
+            if (!File.Exists(Path.Combine(FolderPath, FileName))) //file does not exist, create default settings file on first save
             {
-                using (var fStreamDefault = new FileStream(Paths.BuildFullFilePath(FileNameDefault, FolderPath), FileMode.Create))
+                using (var fStreamDefault = new FileStream(Path.Combine(FolderPath, FileNameDefault), FileMode.Create))
                     serializer.Serialize(fStreamDefault, this);
             }
 
-            using (var fStream = new FileStream(Paths.BuildFullFilePath(FileName, FolderPath), FileMode.Create))
+            using (var fStream = new FileStream(Path.Combine(FolderPath, FileName), FileMode.Create))
             {
                 serializer.Serialize(fStream, this);
             }

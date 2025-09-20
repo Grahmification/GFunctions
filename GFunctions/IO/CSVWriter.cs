@@ -30,7 +30,7 @@
         public CSVWriter(string folder, string fileName)
         {
             FileName = fileName;
-            FilePath = Paths.BuildFullFilePath(fileName, folder);
+            FilePath = Path.Combine(folder, fileName);
 
             _writer = new StreamWriter(FilePath);
         }
