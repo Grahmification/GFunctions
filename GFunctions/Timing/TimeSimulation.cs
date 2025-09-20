@@ -1,43 +1,61 @@
-﻿using System;
-using System.Threading.Tasks;
-using System.Threading;
-
-namespace GFunctions.Timing
+﻿namespace GFunctions.Timing
 {
+    /// <summary>
+    /// Class for performing a simulation that involves calling a method at a specific time interval
+    /// </summary>
     public class TimeSimulation
     {
-        private bool _running = false;
-        private ManualResetEvent _finishedStop = new ManualResetEvent(false); //flag to notify that all running loops have ended
-        private ManualResetEvent _workDoneHandle = new ManualResetEvent(false); //flag to notify foreground work has been finished for cycle, must be set after doing work from the eventArgs
+        private readonly ManualResetEvent _finishedStop = new(false); //flag to notify that all running loops have ended
+        private readonly ManualResetEvent _workDoneHandle = new(false); //flag to notify foreground work has been finished for cycle, must be set after doing work from the eventArgs
         private double _timeIncrement = 30; //simulation time increment in ms
-        private StopWatchPrecision _sw = new StopWatchPrecision(); //keeps track of simulation time
-        private int _cycleCount = 0;
+        private readonly StopWatchPrecision _sw = new(); //keeps track of simulation time
 
-        public event EventHandler<TimeSimulationStepEventArgs> SimulationDoWorkRequest;
-        public event EventHandler<int> RunFreqUpdated;
+        /// <summary>
+        /// Fires to indicate the simulation work method should run based on the event
+        /// </summary>
+        public event EventHandler<TimeSimulationStepEventArgs>? SimulationDoWorkRequest;
 
-        public bool Running
-        {
-            get { return _running; }
-        }
+        /// <summary>
+        /// Fires to indicate the simulation FPS has been updates
+        /// </summary>
+        public event EventHandler<int>? RunFreqUpdated;
 
+        /// <summary>
+        /// True if the simulation is running
+        /// </summary>
+        public bool Running { get; private set; } = false;
+
+        /// <summary>
+        /// The number of simulation cycles that have passed since starting
+        /// </summary>
+        public int CycleCount { get; private set; } = 0;
+
+
+        /// <summary>
+        /// Start the simulation running
+        /// </summary>
+        /// <param name="timeIncrement">The time increment in ms between simulation cycles</param>
         public void Start(double timeIncrement)
         {
-            var RequestCallBack = new Progress<int>(s => this.runDoWorkCallback());
-            var FPSCallBack = new Progress<int>(s => this.FrequencyCallback(s));
+            var RequestCallBack = new Progress<int>(s => RunDoWorkCallback());
+            var FPSCallBack = new Progress<int>(s => FrequencyCallback(s));
 
             _timeIncrement = timeIncrement;
-            _running = true;
-            _cycleCount = 0;
+            Running = true;
+            CycleCount = 0;
             _finishedStop.Reset();
 
             _sw.StartNew(); //log starting time
 
-            Task.Factory.StartNew(() => runDoWork(FPSCallBack, RequestCallBack), TaskCreationOptions.LongRunning);
+            Task.Factory.StartNew(() => RunDoWork(FPSCallBack, RequestCallBack), TaskCreationOptions.LongRunning);
         }
+
+        /// <summary>
+        /// Stop the simulation from running
+        /// </summary>
         public void Stop()
         {
-            this._running = false; //set flag to stop
+            Running = false; //set flag to stop
 
             _workDoneHandle.Set(); //don't need to wait anymore
             _finishedStop.WaitOne(); //loops still running, need to wait            
@@ -47,20 +65,16 @@ namespace GFunctions.Timing
             _sw.Stop();
         }
 
-        private void runDoWork(IProgress<int> FreqCallBack, IProgress<int> RequestCallBack)
+        private void RunDoWork(IProgress<int> freqCallBack, IProgress<int> requestCallBack)
         {
-            while (this._running == true)
+            while (Running)
             {
                 double loopStartTime = _sw.ElapsedMilliseconds;
-                double loopEndTime = loopStartTime + this._timeIncrement; //time loop should be ending in ms
+                double loopEndTime = loopStartTime + _timeIncrement; //time loop should be ending in ms
 
                 //-------------- Do work here ---------------------------------
-
-                //if (SimulationDoWorkRequest != null) //raise event if there are subscribers
-                //SimulationDoWorkRequest(this, new SimulationTimeStepEventArgs(_timeIncrement/1000.0, _sw.ElapsedMilliseconds));
-
                 _workDoneHandle.Reset();
-                RequestCallBack.Report(-1); //allows work to be done in foreground thread
+                requestCallBack.Report(-1); //allows work to be done in foreground thread
                 _workDoneHandle.WaitOne(); //wait for work to be done
 
                 // ------------- sleep if needed ------------------------------
@@ -70,40 +84,59 @@ namespace GFunctions.Timing
 
                 // ------------- report operating frequency ------------------------------
 
-                double freq = 1000.0 / (_sw.ElapsedMilliseconds - loopStartTime);
-                //FreqCallBack.Report((int)freq); //seems to make simulation slow. Trigger every 10 cycles?
+                // Only every 10 cycles or else will make simulation slow
+                if (CycleCount % 10 == 0)
+                {
+                    double freq = 1000.0 / (_sw.ElapsedMilliseconds - loopStartTime);
+                    freqCallBack.Report((int)freq);
+                }
 
-
-                _cycleCount++;
+                CycleCount++;
             }
-
 
             _finishedStop.Set(); //all running loops have ended
         }
-        private void runDoWorkCallback()
+        private void RunDoWorkCallback()
         {
-            if (SimulationDoWorkRequest != null) //raise event if there are subscribers
-                SimulationDoWorkRequest(this, new TimeSimulationStepEventArgs(_timeIncrement / 1000.0, _sw.ElapsedMilliseconds, _workDoneHandle));
-        } //makes event get raised in foreground thread
+            SimulationDoWorkRequest?.Invoke(this, new TimeSimulationStepEventArgs(_timeIncrement / 1000.0, _sw.ElapsedMilliseconds, _workDoneHandle));
+        } // Makes event get raised in foreground thread
         private void FrequencyCallback(int runFrequency)
         {
-            if (RunFreqUpdated != null) //raise event if there are subscribers
-                RunFreqUpdated(this, runFrequency);
-        } //makes event get raised in foreground thread
-
+            RunFreqUpdated?.Invoke(this, runFrequency);
+        } // Makes event get raised in foreground thread
     }
 
+    /// <summary>
+    /// Arguments for when the <see cref="TimeSimulation"/> work method is called
+    /// </summary>
     public class TimeSimulationStepEventArgs
     {
-        public double TimeIncrement { get; private set; } // [s]
-        public double Time { get; private set; } // [s]
+        /// <summary>
+        /// The simulation cycle time [s]
+        /// </summary>
+        public double TimeIncrement { get; private set; }
 
+        /// <summary>
+        /// Elapsed time since the simulation was started [s]
+        /// </summary>
+        public double Time { get; private set; }
+
+        /// <summary>
+        /// The work method should set this callback to indicate that the simulation can proceed with another cycle
+        /// </summary>
         public ManualResetEvent WorkDoneCallback { get; private set; }
+
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        /// <param name="timeIncrement">The simulation cycle time [s]</param>
+        /// <param name="time">Elapsed time since the simulation was started [s]</param>
+        /// <param name="workDoneCallBack">Callback to indicate the simulation should proceed</param>
         public TimeSimulationStepEventArgs(double timeIncrement, double time, ManualResetEvent workDoneCallBack)
         {
-            this.TimeIncrement = timeIncrement;
-            this.Time = time;
-            this.WorkDoneCallback = workDoneCallBack;
+            TimeIncrement = timeIncrement;
+            Time = time;
+            WorkDoneCallback = workDoneCallBack;
         }
     }
 }

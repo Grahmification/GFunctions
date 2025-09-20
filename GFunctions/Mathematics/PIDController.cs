@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GFunctions.Mathematics
+﻿namespace GFunctions.Mathematics
 {
+    /// <summary>
+    /// Model of a PID controller
+    /// </summary>
     public class PIDController
     {
         private bool _firstCycle = true;
@@ -17,64 +14,105 @@ namespace GFunctions.Mathematics
 
         private double _integralSum = 0; //may consider adding limit executed in private set property
 
-        public double Gain { get; set; }
-        public double P { get; set; }
-        public double I { get; set; }
-        public double D { get; set; }
-        public double SatLimit { get; set; }  //limits max/min output value of controller, 0 = no limit
-        public bool TargetIsolatedDeriv { get; set; } //if True, d is calculated from output change, not error change (isolating it from setpoint changes)
+        /// <summary>
+        /// Global controller gain
+        /// </summary>
+        public double Gain { get; set; } = 1;
 
-        public PIDController(double gain, double p, double i, double d, double satLimit = 0)
+        /// <summary>
+        /// Proportional gain
+        /// </summary>
+        public double P { get; set; } = 1;
+
+        /// <summary>
+        /// Integral gain
+        /// </summary>
+        public double I { get; set; } = 1;
+
+        /// <summary>
+        /// Derivative gain
+        /// </summary>
+        public double D { get; set; } = 1;
+
+        /// <summary>
+        /// Limits max/min output value of controller, 0 = no limit
+        /// </summary>
+        public double SatLimit { get; set; } = 0;
+
+        /// <summary>
+        /// If True, d is calculated from output change, not error change (isolating it from setpoint changes)
+        /// </summary>
+        public bool TargetIsolatedDerivative { get; set; } = true;
+
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        /// <param name="gain">Global controller gain</param>
+        /// <param name="p">Proportional gain</param>
+        /// <param name="i">Integral gain</param>
+        /// <param name="d">Derivative gain</param>
+        /// <param name="saturationLimit">Limits max/min output value of controller, 0 = no limit</param>
+        public PIDController(double gain, double p, double i, double d, double saturationLimit = 0)
         {
-            this.Gain = gain;
-            this.P = p;
-            this.I = i;
-            this.D = d;
-            this.SatLimit = satLimit;
-            this.TargetIsolatedDeriv = true;
+            Gain = gain;
+            P = p;
+            I = i;
+            D = d;
+            SatLimit = saturationLimit;
         }
-        public void SetTarget(double Target)
+        
+        /// <summary>
+        /// Sets the target input for the controller
+        /// </summary>
+        /// <param name="target">The value to target</param>
+        public void SetTarget(double target)
         {
-            _target = Target;
+            _target = target;
         }
-        public double CalcOutput(double ProcessVar, double TimeStep)
+        
+        /// <summary>
+        /// Computes one cycle of the controller, calculating the output value
+        /// </summary>
+        /// <param name="processVar">The feedback value from the system, used to calculate error</param>
+        /// <param name="timeStep">The delta t value</param>
+        /// <returns>The controller output</returns>
+        public double CalculateOutput(double processVar, double timeStep)
         {
-            var error = _target - ProcessVar; //calculate error
+            var error = _target - processVar; //calculate error
 
             if (_firstCycle)
             {
-                this._previousError = error; //no previous error data saved
-                this._prevProcessVar = ProcessVar;
+                _previousError = error; //no previous error data saved
+                _prevProcessVar = processVar;
             }
 
-
-            this._integralSum += Calculus.Integrate(error, TimeStep);
+            _integralSum += Calculus.Integrate(error, timeStep);
 
             double output = 0;
-            output += this.P * error; //proportional term
-            output += this.I * this._integralSum; //integral term 
+            output += P * error; //proportional term
+            output += I * _integralSum; //integral term 
 
-            if (this.TargetIsolatedDeriv)
+            if (TargetIsolatedDerivative)
             {
-                output += this.D * Calculus.Derivative(this._prevProcessVar, ProcessVar, TimeStep); //derivative from process variable
+                output += D * Calculus.Derivative(_prevProcessVar, processVar, timeStep); //derivative from process variable
             }
             else
             {
-                output += this.D * Calculus.Derivative(this._previousError, error, TimeStep); //derivative from process variable
+                output += D * Calculus.Derivative(_previousError, error, timeStep); //derivative from process variable
             }
 
 
-            output *= this.Gain; //apply the gain
-            output = CheckSatLimit(output, this.SatLimit); //check if the output is inside the saturation limit
+            output *= Gain; //apply the gain
+            output = CheckSatuationLimit(output, SatLimit); //check if the output is inside the saturation limit
 
-            this._previousError = error; //save current value for next cycle
-            this._prevProcessVar = ProcessVar;
-            this._firstCycle = false;
+            _previousError = error; //save current value for next cycle
+            _prevProcessVar = processVar;
+            _firstCycle = false;
 
             return output;
         }
 
-        private double CheckSatLimit(double output, double satLimit)
+        private static double CheckSatuationLimit(double output, double satLimit)
         {
             if (satLimit == 0) //0 = no saturation limit
                 return output;

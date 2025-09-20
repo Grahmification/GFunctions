@@ -1,16 +1,26 @@
 ﻿namespace GFunctions.OpenTK
 {
-    public class GLControlViewUpdatedEventArgs
+    /// <summary>
+    /// Arguments for when a <see cref="GLControlDraggable"/> view is updated
+    /// </summary>
+    /// <param name="translation">Translation of the view [X,Y,Z]</param>
+    /// <param name="rotation">Rotation of the view [Z,X]</param>
+    /// <param name="zoom">Zoom of the view</param>
+    public class GLControlViewUpdatedEventArgs(double[] translation, double[] rotation, double zoom)
     {
-        public double[] Translation { get; private set; }
-        public double[] Rotation { get; private set; }
-        public double Zoom { get; private set; }
+        /// <summary>
+        /// Translation of the view [X,Y,Z]
+        /// </summary>
+        public double[] Translation { get; private set; } = translation;
 
-        public GLControlViewUpdatedEventArgs(double[] translation, double[] rotation, double zoom)
-        {
-            this.Translation = translation;
-            this.Rotation = rotation;
-            this.Zoom = zoom;
-        }
+        /// <summary>
+        /// Rotation of the view [Z,X]
+        /// </summary>
+        public double[] Rotation { get; private set; } = rotation;
+
+        /// <summary>
+        /// Zoom of the view
+        /// </summary>
+        public double Zoom { get; private set; } = zoom;
     }
 }

@@ -24,17 +24,25 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-using OpenTK;
 using OpenTK.Graphics.OpenGL;
-using System.Drawing;
+using OpenTK.Mathematics;
 
 namespace GFunctions.OpenTK
 {
+    /// <summary>
+    /// Various objects that can be drawn with OpenTK
+    /// </summary>
     public class GLObjects
     {
+        /// <summary>
+        /// Draw a cube
+        /// </summary>
+        /// <param name="Clr">Color of the cube</param>
+        /// <param name="Pos">Center position of the cube [x,y,z]</param>
+        /// <param name="width">Width of the cube</param>
         public static void Cube(Color Clr, double[] Pos, double width)
         {
-            GL.Color3(Clr);
+            GL.Color4(Clr);
 
             GL.Begin(PrimitiveType.Quads);
             GL.Vertex3(Pos[0] + width / 2.0, Pos[1] + width / 2.0, Pos[2] + width / 2.0);
@@ -67,12 +75,19 @@ namespace GFunctions.OpenTK
             GL.Vertex3(Pos[0] - width / 2.0, Pos[1] - width / 2.0, Pos[2] - width / 2.0);
             GL.Vertex3(Pos[0] + width / 2.0, Pos[1] - width / 2.0, Pos[2] - width / 2.0);
 
-
             GL.End();
         }
+
+        /// <summary>
+        /// Draw a line
+        /// </summary>
+        /// <param name="Clr">Color of the line</param>
+        /// <param name="End1">Coordinates of end 1 [x,y,z]</param>
+        /// <param name="End2">Coordinates of end 2 [x,y,z]</param>
+        /// <param name="thickness">Line thickness (default 1)</param>
         public static void Line(Color Clr, double[] End1, double[] End2, double thickness = 1)
         {
-            GL.Color3(Clr);
+            GL.Color4(Clr);
 
             GL.Begin(PrimitiveType.Lines);
 
@@ -83,6 +98,14 @@ namespace GFunctions.OpenTK
 
             GL.End();
         }
+        
+        /// <summary>
+        /// Draw an arrow
+        /// </summary>
+        /// <param name="Clr">Color of the arrow</param>
+        /// <param name="Pos">Starting position of the arrow tail [x,y,z]</param>
+        /// <param name="Dir">Direction vector of the arrow [x,y,z]</param>
+        /// <param name="Length">Length of the arrow</param>
         public static void Arrow(Color Clr, double[] Pos, double[] Dir, double Length)
         {
             if (Length != 0)
@@ -108,7 +131,7 @@ namespace GFunctions.OpenTK
                     //draw line
                     GLObjects.Line(Clr, Pos, new double[] { Pos[0] + vect.X, Pos[1] + vect.Y, Pos[2] + vect.Z });
 
-                    GL.Color3(Clr);
+                    GL.Color4(Clr);
                     GL.Begin(PrimitiveType.Triangles);
                     Vector3 endPt = Vector3.Multiply(vect, (float)0.8);
                     GL.Vertex3(Pos[0] + vect.X, Pos[1] + vect.Y, Pos[2] + vect.Z);

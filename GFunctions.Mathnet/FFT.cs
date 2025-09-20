@@ -22,8 +22,6 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-using System;
-using System.Threading;
 using MathNet.Numerics;
 using MathNet.Numerics.IntegralTransforms;
 using GFunctions.Timing;
@@ -72,7 +70,7 @@ namespace GFunctions.Mathnet
         {
             int n = Convert.ToInt32(args[0]);
 
-            if (IsPowerOfTwo(n) == false)
+            if (!IsPowerOfTwo(n))
                 throw new Exception("FFT Can only capture values in powers of 2.");
 
 

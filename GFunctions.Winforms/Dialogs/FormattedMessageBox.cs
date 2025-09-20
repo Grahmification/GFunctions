@@ -1,13 +1,10 @@
-﻿using System.Windows.Forms;
-
-namespace GFunctions.Winforms.Dialogs
+﻿namespace GFunctions.Winforms.Dialogs
 {
     /// <summary>
     /// Class providing a global entry point for displaying message boxes
     /// </summary>
     public static class FormattedMessageBox
     {
-
         /// <summary>
         /// Displays a user message in a <see cref="MessageBox"/>
         /// </summary>
@@ -29,7 +26,7 @@ namespace GFunctions.Winforms.Dialogs
         /// <returns>Result from the message box button</returns>
         public static DialogResult DisplayError(string message)
         {
-            return MessageBox.Show("An error occurred: " + message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return MessageBox.Show($"An error occurred: {message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 }

@@ -1,15 +1,14 @@
-﻿using System;
-using System.Drawing;
-using System.Windows.Forms;
-
-namespace GFunctions.Winforms.Input
+﻿namespace GFunctions.Winforms.Input
 {
+    /// <summary>
+    /// A textbox that nicely displays numeric output values with error display
+    /// </summary>
     public partial class NumericDisplayTextBox : TextBox
     {
         /// <summary>
         /// Stores the default color when the control gets initialized
         /// </summary>
-        private Color defaultBackColor = Color.White;
+        private readonly Color defaultBackColor = Color.White;
 
         /// <summary>
         /// The data model for this textbox
@@ -17,7 +16,6 @@ namespace GFunctions.Winforms.Input
         public NumericDisplayModel Model { get; set; } = new NumericDisplayModel();
 
         //------------------------- Public Methods -------------------------------------
-
         /// <summary>
         /// Default constructor
         /// </summary>
@@ -25,49 +23,38 @@ namespace GFunctions.Winforms.Input
         {
             InitializeComponent();
             defaultBackColor = BackColor;
-            this.TextChanged += handleTextChanged;
-            this.Click += this.TextBox_MouseClick;
+            TextChanged += HandleTextChanged;
+            Click += TextBox_MouseClick;
         
-            this.DataBindings.Clear();
-            this.DataBindings.Add("Text", this, "Model.ValueString", true, DataSourceUpdateMode.OnPropertyChanged);
+            DataBindings.Clear();
+            DataBindings.Add("Text", this, "Model.ValueString", true, DataSourceUpdateMode.OnPropertyChanged);
         }
 
         /// <summary>
         /// Turns the control red if an error occurred
         /// </summary>
-        /// <param name="Error">True if an error occurred</param>
-        public void SetErrorStatus(bool Error)
+        /// <param name="error">True if an error occurred</param>
+        public void SetErrorStatus(bool error)
         {
-            if (Error)
-            {
-                BackColor = Color.IndianRed;
-            }
-            else
-            {
-                BackColor = defaultBackColor;
-            }
+            BackColor = error ? Color.IndianRed : defaultBackColor;
         }
 
         //------------------------- Event Methods -------------------------------------
-        private void handleTextChanged(object sender, EventArgs e)
+        private void HandleTextChanged(object? sender, EventArgs e)
         {
             try
             {
-                if (Model.Value is null)
-                {
-                    ForeColor = Color.Red;
-                }
-                else
-                {
-                    ForeColor = Color.Black;
-                }
+                ForeColor = Model.Value is null ? Color.Red : Color.Black;
             }
             catch (Exception) { }
         }
-        private void TextBox_MouseClick(object Sender, EventArgs e)
+        private void TextBox_MouseClick(object? Sender, EventArgs e)
         {
-            TextBox sendTxt = (TextBox)Sender;
-            sendTxt.SelectAll();
+            if (Sender != null)
+            {
+                TextBox sendTxt = (TextBox)Sender;
+                sendTxt.SelectAll();
+            }
         }
     }
 }

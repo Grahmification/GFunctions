@@ -1,8 +1,4 @@
-﻿using System;
-using System.Windows.Forms;
-using System.Collections.Generic;
-
-namespace GFunctions.Winforms.Dialogs
+﻿namespace GFunctions.Winforms.Dialogs
 {
     /// <summary>
     /// Class providing a global entry point for displaying dialog boxes to save and load files/folders
@@ -14,12 +10,12 @@ namespace GFunctions.Winforms.Dialogs
         /// </summary>
         /// <param name="fileTypes">An array of filetypes for which to include in the filter string. If null returns the default all files filter.</param>
         /// <returns>The formatted filter string for the dialog. All files plus any extra specified</returns>
-        public static string GetFileTypeFilter(IOFileTypes[] fileTypes = null)
+        public static string GetFileTypeFilter(IOFileTypes[]? fileTypes = null)
         {
             var fileStrings = new List<string>();
 
             //if not null we have extra file types to add
-            if (!(fileTypes is null))
+            if (fileTypes is not null)
             {
                 //iterate through each additional file and add the required filter string
                 foreach (IOFileTypes fileType in fileTypes)
@@ -58,7 +54,7 @@ namespace GFunctions.Winforms.Dialogs
         /// </summary>
         /// <param name="folderDlg">Optional override for the default dialog formatting</param>
         /// <returns>The selected folder path or a blank string on error</returns>
-        public static string DisplayFolderBrowserDialog(FolderBrowserDialog folderDlg = null)
+        public static string DisplayFolderBrowserDialog(FolderBrowserDialog? folderDlg = null)
         {
             if (folderDlg is null)
             {
@@ -84,7 +80,7 @@ namespace GFunctions.Winforms.Dialogs
         /// </summary>
         /// <param name="saveDlg">Optional override for the default dialog formatting</param>
         /// <returns>The selected file path or a blank string on error</returns>
-        public static string DisplaySaveFileDialog(SaveFileDialog saveDlg = null)
+        public static string DisplaySaveFileDialog(SaveFileDialog? saveDlg = null)
         {
             if (saveDlg is null)
             {
@@ -111,11 +107,11 @@ namespace GFunctions.Winforms.Dialogs
         /// <param name="fileFilters">Optional file type filters</param>
         /// <param name="fileNameSuggestion">Optional default starting filename</param>
         /// <returns>The selected file path or a blank string on error</returns>
-        public static string DisplaySaveFileDialog(IOFileTypes[] fileFilters = null, string fileNameSuggestion = "")
+        public static string DisplaySaveFileDialog(IOFileTypes[]? fileFilters = null, string fileNameSuggestion = "")
         {
             int filterIndex = 0;
 
-            if (!(fileFilters is null))
+            if (fileFilters is not null)
                 filterIndex = fileFilters.Length; //select the first filter entry
 
             var saveDlg = new SaveFileDialog()
@@ -136,7 +132,7 @@ namespace GFunctions.Winforms.Dialogs
         /// </summary>
         /// <param name="openDlg">Optional override for the default dialog formatting</param>
         /// <returns>The selected file path or a blank string on error</returns>
-        public static string DisplayOpenFileDialog(OpenFileDialog openDlg = null)
+        public static string DisplayOpenFileDialog(OpenFileDialog? openDlg = null)
         {
             if (openDlg is null)
             {
@@ -165,11 +161,11 @@ namespace GFunctions.Winforms.Dialogs
         /// <param name="fileFilters">Optional file type filters</param>
         /// <param name="fileNameSuggestion">Optional default starting filename</param>
         /// <returns>The selected file path or a blank string on error</returns>
-        public static string DisplayOpenFileDialog(IOFileTypes[] fileFilters = null, string fileNameSuggestion = "")
+        public static string DisplayOpenFileDialog(IOFileTypes[]? fileFilters = null, string fileNameSuggestion = "")
         {
             int filterIndex = 0;
 
-            if (!(fileFilters is null))
+            if (fileFilters is not null)
                 filterIndex = fileFilters.Length; //select the first filter entry
 
             var openDlg = new OpenFileDialog()
@@ -190,8 +186,19 @@ namespace GFunctions.Winforms.Dialogs
     /// </summary>
     public enum IOFileTypes
     {
+        /// <summary>
+        /// .csv file
+        /// </summary>
         CSV,
+
+        /// <summary>
+        /// .sqlite file
+        /// </summary>
         Sqlite,
+
+        /// <summary>
+        /// .png image file
+        /// </summary>
         ImagePNG
     }
 }
