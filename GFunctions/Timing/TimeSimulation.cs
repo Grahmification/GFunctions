@@ -1,4 +1,4 @@
-﻿namespace GFunctions.Timing
+namespace GFunctions.Timing
 {
     /// <summary>
     /// Class for performing a simulation that involves calling a foreground method at a specific time interval
@@ -48,6 +48,11 @@
         /// The target simulation cycle time increment in ms
         /// </summary>
         public double TargetCycleTime { get; private set; } = 30;
+
+        /// <summary>
+        /// Elapsed time since the simulation was started
+        /// </summary>
+        public ICurrentTimeProvider Time => _stopWatch;
 
         // --------------------------- Public Methods -------------------------
 
