@@ -27,8 +27,4 @@ Some of the sub-projects reference the base project as a dependency.
 
 #### Changelog
 
-**V1.1.0.0**
-- Updated all projects to .net 8.0
-- Updated all dependencies to latest versions
-- Minor renaming of a couple functions for clarity
-- Code formatting and cleanup
+See the [changelog](CHANGELOG.md) for changes.
