@@ -5,7 +5,7 @@ namespace GFunctions.Timing
     /// <summary>
     /// A stopwatch that operations much more accurately than the default <see cref="Stopwatch"/> becuase it uses ticks.
     /// </summary>
-    public class StopWatchPrecision
+    public class StopWatchPrecision : ICurrentTimeProvider
     {
         private Stopwatch _sw = new();
         private readonly double _freq = Stopwatch.Frequency / 1000.0; //number of milliseconds in one timer tick

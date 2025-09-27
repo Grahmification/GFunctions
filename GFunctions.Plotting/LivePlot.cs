@@ -1,107 +1,95 @@
-﻿/*Licence Declaration:
-
-This code uses the Oxyplot libary under the MIT License
-
-MIT License
-
-Copyright (c) 2014 OxyPlot contributors
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
- */
-
 using OxyPlot;
 using OxyPlot.Series;
 using OxyPlot.Axes;
 using GFunctions.Timing;
 
-
 namespace GFunctions.Plotting
 {
     /// <summary>
-    /// A function that will run continuously to generate plot points
+    /// A plot XY datapoint that also includes a time value
     /// </summary>
-    public class PlotTargetFunction
+    /// <param name="xValue">The X plot value</param>
+    /// <param name="yValue">The Y plot value</param>
+    /// <param name="time">The point create time [s]</param>
+    public class TimedDataPoint(double xValue, double yValue, double time): IDataPointProvider
     {
         /// <summary>
-        /// Definition for a function that runs continuously for each tick of the plot
+        /// The X plot value
         /// </summary>
-        /// <param name="sw">Stopwatch for time of the plot</param>
-        /// <param name="args">Additional arguments</param>
-        /// <returns>[X,Y] coordinates for the new plot point</returns>
-        public delegate double[,] TargetFunction(StopWatchPrecision sw, params object[] args);
-
-        private readonly TargetFunction _func;
-        private readonly object[] _args;
+        public double X { get; set; } = xValue;
 
         /// <summary>
-        /// Initialize the class
+        /// The Y plot value
         /// </summary>
-        /// <param name="func">The function to get data</param>
-        /// <param name="args">Optional input arguments to the function</param>
-        public PlotTargetFunction(TargetFunction func, params object[] args)
-        {
-            _func = func;
-            _args = args;
-        }
+        public double Y { get; set; } = yValue;
 
         /// <summary>
-        /// Executes the function
+        /// The point create time [s]
         /// </summary>
-        /// <param name="sw"></param>
-        /// <returns></returns>
-        public double[,] RunFunction(StopWatchPrecision sw)
+        public double Time { get; set; } = time;
+
+        /// <summary>
+        /// Get the datapoint implementation of the class for <see cref="IDataPointProvider"/>
+        /// </summary>
+        /// <returns>DataPoint associated with X and Y</returns>
+        public DataPoint GetDataPoint()
         {
-            return _func(sw, _args);
+            return new DataPoint(X, Y);
         }
     }
-    
+
     /// <summary>
-    /// A function that runs once when added to the plot loop
+    /// Definition for a function that runs continuously for each tick of the plot
     /// </summary>
-    public class PlotSingleRunFunction
+    /// <param name="stopWatch">Stopwatch containing the time of the plot</param>
+    /// <returns>An array of points to add to the plot</returns>
+    public delegate TimedDataPoint[] PlotDataFunction(ICurrentTimeProvider stopWatch);
+
+    /// <summary>
+    /// Wrapper to hold points for a plot series and an associated function to get new data
+    /// </summary>
+    /// <param name="function">The function to get new data points for the series</param>
+    internal class PlotDataPointCollection(PlotDataFunction function)
     {
         /// <summary>
-        /// Definition of the function
+        /// Points to be plotted with a connected plot series, ordered from oldest to newest
         /// </summary>
-        /// <param name="args">Any arguments to pass</param>
-        public delegate void SingleRunFunction(params object[] args);
-
-        private readonly SingleRunFunction _func;
-        private readonly object[] _args;
+        public List<TimedDataPoint> Points { get; private set; } = [];
 
         /// <summary>
-        /// Default constructor
+        /// The function to get new datapoints
         /// </summary>
-        /// <param name="func">The function to call</param>
-        /// <param name="args">Optional input arguments to the function</param>
-        public PlotSingleRunFunction(SingleRunFunction func, params object[] args)
+        public PlotDataFunction DataFunction { get; private set; } = function;
+
+        /// <summary>
+        /// Gets new datapoints from the function and appends them to the points
+        /// </summary>
+        /// <param name="stopWatch">Stopwatch containing the time of the plot</param>
+        public void GetNewPoints(ICurrentTimeProvider stopWatch)
         {
-            _func = func;
-            _args = args;
+            TimedDataPoint[] data = DataFunction(stopWatch);
+            Points.AddRange(data);
         }
 
         /// <summary>
-        /// Executes the function
+        /// Removes points with times older than the specified cutoff time
         /// </summary>
-        public void RunFunction()
+        /// <param name="deleteCutoff">Points older than this time (seconds) will be removed</param>
+        public void RemoveOldPoints(double deleteCutoff)
         {
-            _func(_args);
+            int removeCount = 0;
+
+            for (int i = 0; i < Points.Count; i++)
+            {
+                if (Points[i].Time < deleteCutoff)
+                    removeCount++;
+                else
+                    break; // If a good point is reached stop searching
+            }
+            
+            // Remove all at once for efficiency
+            Points.RemoveRange(0, removeCount);
+            
         }
     }
 
@@ -110,15 +98,34 @@ namespace GFunctions.Plotting
     /// </summary>
     public class LivePlot
     {
-        private double _refreshRate = -1; //refresh time in seconds
-        private double _cutOffPeriod = -1; //max period to keep data, in seconds
-        private readonly StopWatchPrecision _sw = new(); //keeps track of the starting time, what time data is added
-        private bool _finishedStop = false; //flag to notify that all running loops have ended
+        /// <summary>
+        /// How long the plot will retain old data, in seconds. Zero means all data will refresh each update.
+        /// </summary>
+        private double _cutOffPeriod = 0;
 
-        private readonly List<PlotTargetFunction> _funcs = []; //holds the target functions to get data for each line
-        private readonly List<LineSeries> _lineSeriesList = []; //holds the plot line objects
+        /// <summary>
+        /// Handles automatically updating the plot at cyclic intervals
+        /// </summary>
+        private readonly TimeSimulation _simulation = new();
 
-        private readonly List<PlotSingleRunFunction> _singleRunFuncs = []; //holds pointers for functions that will be run once then deleted (allow for thread safe function calls while running)
+        /// <summary>
+        /// Holds plot points and data retrieval functions
+        /// </summary>
+        private readonly List<PlotDataPointCollection> _pointCollections = [];
+
+        /// <summary>
+        /// Holds the functions that will be run once then deleted (allow for thread safe function calls while running)
+        /// </summary>
+        private readonly List<Action> _singleRunFuncs = [];
+
+        // --------------------------- Events -------------------------
+
+        /// <summary>
+        /// Fires to indicate the plot update frequency has been changed. Int value is the current frequency [Hz].
+        /// </summary>
+        public event EventHandler<int>? RunFrequencyUpdated;
+
+        // --------------------------- Public Properties -------------------------
 
         /// <summary>
         /// The underlying plot model to control the plot
@@ -128,20 +135,47 @@ namespace GFunctions.Plotting
         /// <summary>
         /// True if the plot is actively updating
         /// </summary>
-        public bool Running { get; private set; } = false;
+        public bool Running => _simulation.Running;
+
+        // --------------------------- Public Methods -------------------------
 
         /// <summary>
-        /// Default constructor
+        /// Construct the class using a <see cref="PlotModel"/> with predefined title and axes
         /// </summary>
         /// <param name="title">The plot title</param>
         /// <param name="XAxisTitle">The plot x-axis title</param>
         /// <param name="YAxisTitle">The plot y-axis title</param>
         public LivePlot(string title, string XAxisTitle, string YAxisTitle)
         {
-            Model = new PlotModel { Title = title };
+            var model = new PlotModel
+            {
+                Title = title
+            };
 
-            Model.Axes.Add(new LinearAxis { Position = AxisPosition.Bottom, Title = XAxisTitle });
-            Model.Axes.Add(new LinearAxis { Position = AxisPosition.Left, Title = YAxisTitle });
+            model.Axes.Add(new LinearAxis { Position = AxisPosition.Bottom, Title = XAxisTitle });
+            model.Axes.Add(new LinearAxis { Position = AxisPosition.Left, Title = YAxisTitle });
+
+            Initialize(model);
+        }
+
+        /// <summary>
+        /// Construct the class with any <see cref="PlotModel"/>
+        /// </summary>
+        /// <param name="model">The model to use for the LivePlot</param>
+        public LivePlot(PlotModel model)
+        {
+            Initialize(model);
+        }
+
+        /// <summary>
+        /// Common initialization logic
+        /// </summary>
+        private void Initialize(PlotModel model)
+        {
+            Model = model;
+
+            _simulation.RunFrequencyUpdated += (s, e) => RunFrequencyUpdated?.Invoke(this, e); // Relay event upwards
+            _simulation.SimulationDoWorkRequest += UpdatePlot;  // Called cyclically when the simulation is running
         }
 
         /// <summary>
@@ -149,18 +183,23 @@ namespace GFunctions.Plotting
         /// </summary>
         /// <param name="line">The series to display</param>
         /// <param name="func">The function to generate points for the series</param>
-        public void AddPlotLine(LineSeries line, PlotTargetFunction func)
+        public void AddPlotLine(LineSeries line, PlotDataFunction func)
         {
+            if (Running)
+                throw new InvalidOperationException("Cannot add plot lines while the plot is updating.");
+
+            PlotDataPointCollection collection = new(func);
+            line.ItemsSource = collection.Points; // Link the LineSeries to the point collection
+            
             Model.Series.Add(line);
-            _lineSeriesList.Add(line);
-            _funcs.Add(func);
+            _pointCollections.Add(collection);
         }
         
         /// <summary>
         /// Adds a function that will run once with the next tick of the plot
         /// </summary>
         /// <param name="func">The function to run</param>
-        public void AddSingleRunFunction(PlotSingleRunFunction func)
+        public void AddSingleRunFunction(Action func)
         {
             _singleRunFuncs.Add(func);
         }
@@ -170,151 +209,84 @@ namespace GFunctions.Plotting
         /// </summary>
         /// <param name="cutOffPeriod">The max time to keep data in seconds, or 0 to refresh the whole plot each update</param>
         /// <param name="refreshRate">The refresh rate in seconds</param>
-        /// <param name="FPSCallBack">A callback to get the actual plot refresh rate</param>
-        public void Start(double cutOffPeriod, double refreshRate, Progress<int> FPSCallBack)
+        public void Start(double cutOffPeriod, double refreshRate)
         {
             ClearData();
 
-            _cutOffPeriod = cutOffPeriod; //0 means that whole plot updates each time
-            _refreshRate = refreshRate;
-            _sw.StartNew(); //log starting time
-            Running = true;
-            _finishedStop = false;
-
-            if (_cutOffPeriod > 0)
-            {
-                Task.Factory.StartNew(() => UpdatePlotIncremental(_lineSeriesList, FPSCallBack), TaskCreationOptions.LongRunning);
-            }
-            else
-            {
-                Task.Factory.StartNew(() => UpdatePlot(_lineSeriesList, FPSCallBack), TaskCreationOptions.LongRunning);
-            }
+            _cutOffPeriod = cutOffPeriod; // 0 means that whole plot updates each time
+            _simulation.Start(refreshRate * 1000); // Convert to ms
         }
-        
+
         /// <summary>
         /// Stops the plot from updating
         /// </summary>
         public void Stop()
         {
-            Running = false; //set flag to stop
-
-            while (!_finishedStop) //loops still running, need to wait            
-                Thread.Sleep((int)(_refreshRate * 500)); //sleep for half a refresh period (converts to ms)
-
-            //----------- now safely run clean up code -------------
-            _sw.Stop();
+            _simulation.Stop();
         }
-        
+
         /// <summary>
         /// Clears all the lines on the plot
         /// </summary>
         public void ClearData()
         {
-            for (int i = 0; i < _lineSeriesList.Count; i++)
+            // If we're running, make sure the methdo runs in the background process
+            if (Running)
+                AddSingleRunFunction(ClearDataDoWork);
+            else
+                ClearDataDoWork();
+        }
+
+        // --------------------------- Private Helpers -------------------------
+
+        private void UpdatePlot(object? sender, TimeSimulationStepEventArgs e)
+        {
+            //-------------- Delete points from lists --------------
+
+            // If we have a real cutoff period
+            if (_cutOffPeriod > 0)
             {
-                _lineSeriesList[i].Points.Clear();
+                // Delete old points beyond the cutoff
+                double deleteCutoff = (_simulation.Time.ElapsedSeconds / 1000.0) - _cutOffPeriod; //any points with time less than this should be deleted
+
+                foreach (PlotDataPointCollection collection in _pointCollections)
+                    collection.RemoveOldPoints(deleteCutoff);
             }
+            else
+            {
+                // Delete all points
+                for (int i = 0; i < _pointCollections.Count; i++)
+                    _pointCollections[i].Points.Clear();
+            }
+
+            // ------------- Run + Delete single run functions -----------------------------------
+            for (int i = 0; i < _singleRunFuncs.Count; i++)
+            {
+                _singleRunFuncs[i](); // Run each function
+            }
+            _singleRunFuncs.Clear(); // Clear all values
+
+            // ------------- Grab new values -----------------------------------
+            for (int i = 0; i < _pointCollections.Count; i++)
+            {
+                _pointCollections[i].GetNewPoints(_simulation.Time);
+            }
+
+            // ------------- Update plot -----------------------------------
             Model.InvalidatePlot(true);
+
+            // Flag the simulation to continue
+            e.FlagWorkDone();
         }
 
-
-        private void UpdatePlotIncremental(List<LineSeries> lines, IProgress<int> progress)
+        private void ClearDataDoWork()
         {
-            while (Running)
+            for (int i = 0; i < _pointCollections.Count; i++)
             {
-                double loopStartTime = (double)_sw.ElapsedMilliseconds;
-                double loopEndTime = loopStartTime + _refreshRate * 1000.0; //time loop should be ending in ms
-
-                //-------------- Delete old points from lists --------------
-                double deleteCutoff = (_sw.ElapsedMilliseconds / 1000.0) - _cutOffPeriod; //any points with time less than this should be deleted
-
-                for (int i = 0; i < lines.Count; i++)
-                {
-                    LineSeries L = lines[i];
-
-                    for (int j = 0; j < L.Points.Count; j++)
-                    {
-                        if (L.Points[j].X < deleteCutoff) { L.Points.RemoveAt(j); } //remove point 
-                        else { break; } // if a good point is reached stop searching
-                    }
-                }
-
-                // ------------- Run + Delete single run functions -----------------------------------
-                for (int i = 0; i < _singleRunFuncs.Count; i++)
-                {
-                    _singleRunFuncs[i].RunFunction(); //run each function
-                }
-                _singleRunFuncs.Clear(); //clear all values
-
-                // ------------- Grab new values -----------------------------------
-                for (int i = 0; i < _funcs.Count; i++)
-                {
-                    double[,] data = _funcs[i].RunFunction(_sw);
-
-                    int count2 = data.GetLength(1);
-
-                    for (int j = 0; j < count2; j++)
-                        lines[i].Points.Add(new DataPoint(data[0, j], data[1, j]));
-                }
-
-                // ------------- Update plot -----------------------------------
-                Model.InvalidatePlot(true);
-
-                // ------------- sleep if needed ------------------------------
-                if (_sw.ElapsedMilliseconds < loopEndTime)
-                { Thread.Sleep((int)(loopEndTime - _sw.ElapsedMilliseconds)); }
-
-                // ------------- report operating frequency ------------------------------
-                double freq = 1000.0 / ((double)_sw.ElapsedMilliseconds - loopStartTime);
-                progress.Report((int)freq);
+                _pointCollections[i].Points.Clear();
             }
 
-            _finishedStop = true; //all running loops have ended
-        }
-        private void UpdatePlot(List<LineSeries> lines, IProgress<int> progress)
-        {
-            while (Running)
-            {
-                double loopStartTime = _sw.ElapsedMilliseconds;
-                double loopEndTime = loopStartTime + _refreshRate * 1000.0; //time loop should be ending in ms
-
-                //-------------- Delete all points from lists --------------
-                for (int i = 0; i < lines.Count; i++)
-                {
-                    lines[i].Points.Clear();
-                }
-
-                // ------------- Run + Delete single run functions -----------------------------------
-                for (int i = 0; i < _singleRunFuncs.Count; i++)
-                {
-                    _singleRunFuncs[i].RunFunction(); //run each function
-                }
-                _singleRunFuncs.Clear(); //clear all values
-
-                // ------------- Grab new values -----------------------------------
-                for (int i = 0; i < _funcs.Count; i++)
-                {
-                    double[,] data = _funcs[i].RunFunction(_sw);
-
-                    int count2 = data.GetLength(1);
-
-                    for (int j = 0; j < count2; j++)
-                        lines[i].Points.Add(new DataPoint(data[0, j], data[1, j]));
-                }
-
-                // ------------- Update plot -----------------------------------
-                Model.InvalidatePlot(true);
-
-                // ------------- sleep if needed ------------------------------
-                if (_sw.ElapsedMilliseconds < loopEndTime)
-                { Thread.Sleep((int)(loopEndTime - _sw.ElapsedMilliseconds)); }
-
-                // ------------- report operating frequency ------------------------------
-                double freq = 1000.0 / (_sw.ElapsedMilliseconds - loopStartTime);
-                progress.Report((int)freq);
-            }
-
-            _finishedStop = true; //all running loops have ended
+            Model.InvalidatePlot(true);
         }
     }
 }

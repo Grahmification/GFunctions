@@ -1,28 +1,4 @@
-﻿/*Licence Declaration:
-
-This code uses the Math.NET Numerics library under the MIT License
-
-Copyright (c) 2002-2020 Math.NET
-
-Permission is hereby granted, free of charge, to any person obtaining a 
-copy of this software and associated documentation files (the "Software"), 
-to deal in the Software without restriction, including without limitation 
-the rights to use, copy, modify, merge, publish, distribute, sublicense, 
-and/or sell copies of the Software, and to permit persons to whom the Software 
-is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included 
-in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS 
-FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS 
-OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
-WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR 
-IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
-
-using MathNet.Numerics.LinearAlgebra.Double;
+﻿using MathNet.Numerics.LinearAlgebra.Double;
 
 namespace GFunctions.Mathnet
 {
@@ -38,6 +14,9 @@ namespace GFunctions.Mathnet
         /// <returns>Equivalent rotation matrix</returns>
         public static DenseMatrix RotationMatrixFromPRY(double[] rotation)
         {
+            if (rotation.Length != 3)
+                throw new ArgumentException("Cannot calculate rotation matrix. Invalid number of arguments provided in array.");
+                
             double Pitch = rotation[0] * Math.PI / 180.0;
             double Roll = rotation[1] * Math.PI / 180.0;
             double Yaw = rotation[2] * Math.PI / 180.0;
@@ -113,17 +92,17 @@ namespace GFunctions.Mathnet
         /// <summary>
         /// Rotates a vector by the given pitch roll yaw angles
         /// </summary>
-        /// <param name="vector">The vector to rotate (x,y,z)</param>
+        /// <param name="vector">The vector to rotate</param>
         /// <param name="rotationPRY">Pitch, roll, yaw rotation in degrees</param>
         /// <returns>The rotated vector (x,y,z)</returns>
-        public static double[] RotateVector(double[] vector, double[] rotationPRY)
+        public static Vector3 RotateVector(Vector3 vector, RotationPRY rotationPRY)
         {
-            DenseVector vectorObj = new(vector); //local vector without rotation;
-            DenseMatrix rotation = RotationMatrixFromPRY(rotationPRY);
+            DenseVector vectorObj = new(vector.ToArray()); // Local vector without rotation;
+            DenseMatrix rotation = rotationPRY.ToRotationMatrix();
 
-            DenseVector rotatedVector = rotation * vectorObj; //apply rotation
+            DenseVector rotatedVector = rotation * vectorObj; // Apply rotation
 
-            return [.. rotatedVector];
+            return new(rotatedVector[0], rotatedVector[1], rotatedVector[2]);
         }
 
         /// <summary>
@@ -134,20 +113,15 @@ namespace GFunctions.Mathnet
         /// <param name="trans2">Second translation distance (x,y,z)</param>
         /// <param name="rotation">Pitch, roll, yaw rotation in degrees</param>
         /// <returns>Transformed coordinates (x,y,z)</returns>
-        public static double[] CalcGlobalCoord(double[] localCoord, double[] trans1, double[] trans2, double[] rotation)
+        public static Vector3 CalcGlobalCoord(Vector3 localCoord, Vector3 trans1, Vector3 trans2, RotationPRY rotation)
         {
-            DenseMatrix LocalCoords = new(3, 1);
-            LocalCoords.SetColumn(0, localCoord);
+            DenseMatrix LocalCoords = localCoord.ToColumnMatrix();
+            DenseMatrix TranslationMat = trans1.ToColumnMatrix();
+            DenseMatrix StartingMat = trans2.ToColumnMatrix();
 
-            DenseMatrix TranslationMat = new(3, 1);
-            TranslationMat.SetColumn(0, trans1);
+            DenseMatrix GlobalCoords = (rotation.ToRotationMatrix() * LocalCoords) + TranslationMat + StartingMat;
 
-            DenseMatrix StartingMat = new(3, 1);
-            StartingMat.SetColumn(0, trans2);
-
-            DenseMatrix GlobalCoords = (RotationMatrixFromPRY(rotation) * LocalCoords) + TranslationMat + StartingMat;
-
-            return [GlobalCoords[0, 0], GlobalCoords[1, 0], GlobalCoords[2, 0]];
+            return new(GlobalCoords[0, 0], GlobalCoords[1, 0], GlobalCoords[2, 0]);
         }
 
         /// <summary>
@@ -159,29 +133,17 @@ namespace GFunctions.Mathnet
         /// <param name="rotation">Pitch, roll, yaw rotation in degrees</param>
         /// <param name="relativeRotCenter">Coordinates of the rotation center (x,y,z) relative to the local coordinate</param>
         /// <returns>Transformed coordinates (x,y,z)</returns>
-        public static double[] CalcGlobalCoord2(double[] localCoord, double[] trans1, double[] trans2, double[] rotation, double[]? relativeRotCenter = null)
+        public static Vector3 CalcGlobalCoord2(Vector3 localCoord, Vector3 trans1, Vector3 trans2, RotationPRY rotation, Vector3? relativeRotCenter = null)
         {
-            double[] coords = [0, 0, 0];
+            // If no relative center, set the rotation center to (0, 0, 0)
+            DenseMatrix RotCenter = (relativeRotCenter ?? new Vector3(0, 0, 0)).ToColumnMatrix();
+            DenseMatrix LocalCoords = localCoord.ToColumnMatrix();
+            DenseMatrix TranslationMat = trans1.ToColumnMatrix();
+            DenseMatrix TranslationMat2 = trans2.ToColumnMatrix();
 
-            if (relativeRotCenter != null)
-                coords = relativeRotCenter;
+            DenseMatrix GlobalCoords = (rotation.ToRotationMatrix() * (LocalCoords - RotCenter + TranslationMat)) + TranslationMat2 + RotCenter; //Rotcenter needs to be added before rotation, then removed after
 
-            DenseMatrix RotCenter = new(3, 1);
-            RotCenter.SetColumn(0, coords);
-
-            DenseMatrix LocalCoords = new(3, 1);
-            LocalCoords.SetColumn(0, localCoord);
-
-            DenseMatrix TranslationMat = new(3, 1);
-            TranslationMat.SetColumn(0, trans1);
-
-            DenseMatrix TranslationMat2 = new(3, 1);
-            TranslationMat2.SetColumn(0, trans2);
-
-
-            DenseMatrix GlobalCoords = (RotationMatrixFromPRY(rotation) * (LocalCoords - RotCenter + TranslationMat)) + TranslationMat2 + RotCenter; //Rotcenter needs to be added before rotation, then removed after
-
-            return [GlobalCoords[0, 0], GlobalCoords[1, 0], GlobalCoords[2, 0]];
+            return new(GlobalCoords[0, 0], GlobalCoords[1, 0], GlobalCoords[2, 0]);
         }
     }
 }

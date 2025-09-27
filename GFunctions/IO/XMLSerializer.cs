@@ -11,18 +11,19 @@ namespace GFunctions.IO
         /// <summary>
         /// Load a class from a file
         /// </summary>
+        /// <param name="folderPath">The folder path</param>
         /// <param name="fileName">The file name to load</param>
-        /// <param name="folderPath">An optional folder path</param>
         /// <returns>The instance of the class in the file, or an empty version of the class</returns>
-        public static T? Load(string fileName, string folderPath = "")
+        public static T? Load(string folderPath, string fileName)
         {
             var serializer = new XmlSerializer(typeof(T));
 
             T? output = default; //initialize to default
+            var filePath = Path.Combine(folderPath, fileName);
 
-            if (File.Exists(Paths.BuildFullFilePath(fileName, folderPath))) //file does exist, load config from file
+            if (File.Exists(filePath)) //file does exist, load config from file
             {
-                using (var fStream = new FileStream(Paths.BuildFullFilePath(fileName, folderPath), FileMode.Open))
+                using (var fStream = new FileStream(filePath, FileMode.Open))
                     output = (T?)serializer.Deserialize(fStream);
             }
 
@@ -42,7 +43,7 @@ namespace GFunctions.IO
             if (!Directory.Exists(folderPath))
                 Directory.CreateDirectory(folderPath); //create the settings folder if it doesn't exist
 
-            using (var fStream = new FileStream(Paths.BuildFullFilePath(fileName, folderPath), FileMode.Create))
+            using (var fStream = new FileStream(Path.Combine(folderPath, fileName), FileMode.Create))
             {
                 serializer.Serialize(fStream, saveClass);
             }

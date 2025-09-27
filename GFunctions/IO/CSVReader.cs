@@ -6,66 +6,90 @@
     public class CSVReader
     {
         private StreamReader? _reader = null;
-        private string _fullPath = "";
-        private bool _continueSearchFlag = true; //if file does not exist, program will keep searching until this is set to false
-        private const int reCheckPeriod = 100; //refresh period in ms to check if a file exists
+        private bool _continueWaitFlag = true; // If the file does not exist, program will keep searching until this is set to false
+        private const int _reCheckPeriod = 100; // Refresh period in ms to check if a file exists
 
         /// <summary>
-        /// Default constructor
+        /// The delimiter for items in the file
         /// </summary>
-        public CSVReader() { }
+        public char Delimiter { get; set; } = ',';
+
+        /// <summary>
+        /// Full path of the file being read from
+        /// </summary>
+        public string FilePath { get; private set; } = string.Empty;
+
+        /// <summary>
+        /// True if the class is waiting to open a file
+        /// </summary>
+        public bool WaitingForFile { get; private set; } = false;
+
+        /// <summary>
+        /// Returns true of the reader has a file open
+        /// </summary>
+        public bool IsFileOpen => _reader != null;
+
+        /// <summary>
+        /// Returns true if there are more lines that can be read
+        /// </summary>
+        public bool MoreLinesToRead => !(_reader?.EndOfStream ?? false);
+
+        // ------------------------- Public Methods ---------------------------------
 
         /// <summary>
         /// Open a csv file, waiting if it does not exist
         /// </summary>
         /// <param name="folder">Folder path containing the file</param>
         /// <param name="fileName">File name</param>
-        public void open(string folder, string fileName)
+        /// <param name="waitForFile">If true, the method will hang until the file exists or the search is cancelled</param>
+        public async Task Open(string folder, string fileName, bool waitForFile = false)
         {
-            _fullPath = Paths.BuildFullFilePath(fileName, folder);
-            open(_fullPath);
+            FilePath = Path.Combine(folder, fileName);
+            await Open(FilePath, waitForFile);
         }
 
         /// <summary>
         /// Open a csv file, waiting if it does not exist
         /// </summary>
         /// <param name="filePath">File path to the csv file</param>
-        public void open(string filePath)
+        /// <param name="waitForFile">If true, the method will hang until the file exists or the search is cancelled</param>
+        public async Task Open(string filePath, bool waitForFile = false)
         {
-            WaitForFile(filePath, reCheckPeriod);
-            Thread.Sleep(reCheckPeriod * 2); //wait so no usage errors thrown
-
-            if (_continueSearchFlag) //if false, user has cancelled search... don't initialize
+            _reader = null;
+            
+            if (waitForFile)
+                await WaitForFile(filePath, _reCheckPeriod);
+            
+            if (_continueWaitFlag) // If false, user has cancelled search... don't initialize
             {
                 _reader = new StreamReader(filePath);
             }
-            else { return; }
         }
 
         /// <summary>
         /// Close the csv file
         /// </summary>
         /// <param name="deleteFile">Deletes the file if true</param>
-        public void close(bool deleteFile = false)
+        public void Close(bool deleteFile = false)
         {
             if (_reader != null)
             {
                 _reader.Close();
+                _reader = null;
 
                 if (deleteFile)
                 {
-                    File.Delete(_fullPath);
+                    File.Delete(FilePath);
                 }
-
             }
         }
 
         /// <summary>
         /// If waiting to open a csv file that doesn't exist, cancels the process
         /// </summary>
-        public void cancelSearch()
+        public void CancelWaitForFile()
         {
-            _continueSearchFlag = false;
+            _continueWaitFlag = false;
         }
 
         /// <summary>
@@ -73,43 +97,45 @@
         /// </summary>
         /// <returns>The complete line</returns>
         /// <exception cref="IOException">No file is opened</exception>
-        public string readline()
+        public string[] ReadLine()
         {
-            if (_reader == null)
+            if (!IsFileOpen)
                 throw new IOException("Cannot read. No file is opened.");
             
-            var line = _reader.ReadLine();
-            return line ?? "";
+            var line = _reader?.ReadLine();
+            return SplitLine(line ?? "");
         }
 
         /// <summary>
-        /// Reads all lines from the csv file
+        /// Reads all unread lines from the csv file
         /// </summary>
         /// <returns>A list of lines in the file</returns>
         /// <exception cref="IOException">No file is opened</exception>
-        public string[] readAllLines()
+        public List<string[]> ReadAllLines()
         {
-            if (_reader == null)
+            if (!IsFileOpen)
                 throw new IOException("Cannot read. No file is opened.");
 
-            List<string> lineList = [];
+            List<string[]> lines = [];
 
-            while (!_reader.EndOfStream)
+            while (MoreLinesToRead)
             {
-                lineList.Add(_reader.ReadLine() ?? "");
+                lines.Add(SplitLine(_reader?.ReadLine() ?? ""));
             }
 
-            return [.. lineList];
+            return lines;
         }
+
+        // ------------------------- Private Helpers ---------------------------------
 
         /// <summary>
         /// Splits a csv line into individual items
         /// </summary>
         /// <param name="line">The whole csv line</param>
         /// <returns>The individual fields</returns>
-        public static string[] splitLine(string line)
+        private string[] SplitLine(string line)
         {
-            return line.Split(',');
+            return line.Split(Delimiter);
         }
 
         /// <summary>
@@ -117,13 +143,18 @@
         /// </summary>
         /// <param name="fullPath">The file paths</param>
         /// <param name="reCheckPeriod">How often to re-check for the file [ms]</param>
-        private void WaitForFile(string fullPath, int reCheckPeriod)
+        private async Task WaitForFile(string fullPath, int reCheckPeriod)
         {
-            while (!File.Exists(fullPath) && _continueSearchFlag)
-            {
-                Thread.Sleep(reCheckPeriod);
-            }
-        }
+            WaitingForFile = true;
+            _continueWaitFlag = true;
 
+            while (!File.Exists(fullPath) && _continueWaitFlag)
+            {
+                await Task.Delay(reCheckPeriod);
+            }
+
+            WaitingForFile = false;
+            await Task.Delay(reCheckPeriod * 2); // Wait so no usage errors thrown
+        }
     }
 }

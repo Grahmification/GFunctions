@@ -1,24 +1,65 @@
 ﻿namespace GFunctions.Mathematics
 {
     /// <summary>
-    /// Uses gradient descent to find an optimal value that minimizes error a function
+    /// Uses gradient descent to find an optimal value that minimizes error of a function with 1 input and 1 output value
     /// </summary>
     public class IterativeSolver
     {
         /// <summary>
         /// Template for the function used to calculate the error
         /// </summary>
-        /// <param name="param1">Generic input parameter</param>
+        /// <param name="iterationValue">Input value being optimized</param>
         /// <returns>The error</returns>
-        public delegate double DoubleFunction(double param1);
+        public delegate double ErrorFunction1D(double iterationValue);
 
-        private double _stepSize = 0.01; //initial change step size to test
-        private double _maxSteps = 100; //max allowable steps before solution fails
-        private readonly double _errorTolerance = 0.001; //error tolerance for successful solution
-        private DoubleFunction _errorFunction; //function which will calculate the error
+        // ----------------------- Private Fields ---------------------------
 
-        private double _maxValue; //max allowable value for solution
-        private double _minValue; //min allowable value for solution
+        /// <summary>
+        /// Function which calculates the error
+        /// </summary>
+        private readonly ErrorFunction1D _errorFunction;
+
+        /// <summary>
+        /// Keeps track of solution values as the solver runs
+        /// </summary>
+        private readonly List<double> _iterationValues = [];
+
+        /// <summary>
+        /// Keeps track of solution values as the solver runs
+        /// </summary>
+        private readonly List<double> _errorValues = [];
+
+        // ----------------------- Public Properties ---------------------------
+
+        /// <summary>
+        /// The max allowable iteration steps before solution fails
+        /// </summary>
+        public double MaxSteps { get; set; } = 100;
+
+        /// <summary>
+        /// Max allowable output value before the solution fails
+        /// </summary>
+        public double MaxSolutionValue { get; set; } = double.MaxValue;
+
+        /// <summary>
+        /// Min allowable output value before the solution fails
+        /// </summary>
+        public double MinSolutionValue { get; set; } = double.MinValue;
+
+        /// <summary>
+        /// Whether max/min solution limits are enabled
+        /// </summary>
+        public bool SolutionLimitsEnabled => !double.IsInfinity(MaxSolutionValue - MinSolutionValue);
+
+        /// <summary>
+        /// The initial step size to test when solving
+        /// </summary>
+        public double InitialStepSize { get; set; } = 0.01;
+
+        /// <summary>
+        /// A solution is considered valid if the absolute error is less than this value
+        /// </summary>
+        public double SuccessErrorThreshold { get; set; } = 0.001;
 
         /// <summary>
         /// Whether a valid solution was found
@@ -26,22 +67,29 @@
         public bool SolutionValid { get; private set; } = false;
 
         /// <summary>
+        /// True if the solver is actively running a solution
+        /// </summary>
+        public bool Solving { get; private set; } = false;
+
+        /// <summary>
+        /// The list of iterated input values from earliest to latest as the solver runs
+        /// </summary>
+        public List<double> IterationValues => _iterationValues;
+
+        /// <summary>
+        /// The list of iterated error values from earliest to latest as the solver runs
+        /// </summary>
+        public List<double> ErrorValues => _errorValues;
+
+        // ----------------------- Public Methods ---------------------------
+
+        /// <summary>
         /// Default constructor
         /// </summary>
-        /// <param name="stepSize">The step at each iteration</param>
-        /// <param name="maxSteps">The max steps before a solution fails</param>
-        /// <param name="errorTolerance">The error tolerance for successful solution</param>
         /// <param name="errorFunc">Function which will calculate the error</param>
-        /// <param name="maxValue">Solution will fail if this value is exceeded</param>
-        /// <param name="minValue">Solution will fail if this value is exceeded</param>
-        public IterativeSolver(double stepSize, double maxSteps, double errorTolerance, DoubleFunction errorFunc, double maxValue, double minValue)
+        public IterativeSolver(ErrorFunction1D errorFunc)
         {
-            _stepSize = stepSize;
-            _maxSteps = maxSteps;
-            _errorTolerance = errorTolerance;
             _errorFunction = errorFunc;
-            _maxValue = maxValue;
-            _minValue = minValue;
         }
 
         /// <summary>
@@ -52,39 +100,55 @@
         public double Solve(double startingValue)
         {
             SolutionValid = false;
+            Solving = true;
+            _iterationValues.Clear();
+            _errorValues.Clear();
 
-            double ScalingStepSize = _stepSize; //default starting step size
+            double scalingStepSize = InitialStepSize; //default starting step size
             double newError = 0;
             double ratio = 0;
 
             double iterationValue = startingValue;
-            double prevError = _errorFunction(iterationValue); //calculate the error
+            double currentError = _errorFunction(iterationValue); // Calculate starting error
 
-            for (int i = 0; i < _maxSteps; i++)
+            for (int i = 0; i < MaxSteps; i++)
             {
-                if (Math.Abs(prevError) <= _errorTolerance) //Solution is with error tolerance (valid)
-                {
-                    if (iterationValue > _maxValue || iterationValue < _minValue)
-                        break; //soln has failed if out of allowable range, exit loop and go to last pos
+                // Log the iteration and error values
+                _iterationValues.Add(iterationValue);
+                _errorValues.Add(currentError);
 
+                // Soln has failed if out of allowable range, exit loop and go to last pos
+                if (iterationValue > MaxSolutionValue || iterationValue < MinSolutionValue)
+                    break;
+
+                // Solution is within error tolerance (valid)
+                if (Math.Abs(currentError) <= SuccessErrorThreshold) 
+                {
                     SolutionValid = true;
+                    Solving = false;
                     return iterationValue;
                 }
 
-                iterationValue += ScalingStepSize; //change value by one step size
+                iterationValue += scalingStepSize; // Change value by one step size
 
-                newError = _errorFunction(iterationValue); //calculate the error
-                ratio = (prevError - newError) / ScalingStepSize; //ratio between change in k and error
-                ScalingStepSize = newError / (ratio * 2.0);
-                prevError = newError;
+                newError = _errorFunction(iterationValue); // Calculate the error
+                ratio = (currentError - newError) / scalingStepSize; // Ratio between change in k and error
+                scalingStepSize = newError / (ratio * 2.0);
+                currentError = newError;
 
-                while (Math.Abs(ScalingStepSize) > (_maxValue - _minValue) / 2.0)
+                // If the step size is approaching the limit range, divide it to make sure we don't exceed too easily
+                if (SolutionLimitsEnabled)
                 {
-                    ScalingStepSize /= 2.0; //helps to prevent value from running away by growing too large
+                    while (Math.Abs(scalingStepSize) > (MaxSolutionValue - MinSolutionValue) / 2.0)
+                    {
+                        scalingStepSize /= 2.0; // Helps to prevent value from running away by growing too large
+                    }
                 }
             }
 
-            return startingValue; //solution has failed. Reset to starting. 
+            // Solution has failed. Reset to starting value.
+            Solving = false;
+            return startingValue;
         }
     }
 }
